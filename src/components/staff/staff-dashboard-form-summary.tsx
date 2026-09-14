@@ -43,7 +43,7 @@ const StaffDashboardFormSumary: React.FC<StaffDashboardFormSummaryProps> = ({
       <CardHeader>
         <span className="text-2xl font-semibold">Preferences Form</span>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="gap-4">
         <div>
           <span className="text-xl font-semibold">
             Availability for term: {isAvailableForTerm ? "Yes" : "No"}

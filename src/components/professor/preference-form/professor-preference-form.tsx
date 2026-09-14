@@ -210,7 +210,7 @@ export default function ProfessorPreferenceForm({
                       </span>
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="flex flex-col space-y-2">
+                  <CardContent className="flex flex-col gap-2">
                     <SelectAssistantPref
                       title="Do you have any assistants that you want for this section?"
                       description="You may not receive your preference."

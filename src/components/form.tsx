@@ -14,7 +14,13 @@ import {
 import { Input } from "./ui/input";
 import type { ReactNode } from "react";
 import { Textarea } from "./ui/textarea";
-import { Select, SelectContent, SelectTrigger, SelectValue } from "./ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 import { Checkbox } from "./ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Button } from "./ui/button";
@@ -176,7 +182,9 @@ export const FormSelect: FormControlFunc<{ children: ReactNode }> = ({
           >
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>{children}</SelectContent>
+          <SelectContent>
+            <SelectGroup>{children}</SelectGroup>
+          </SelectContent>
         </Select>
       )}
     </FormBase>

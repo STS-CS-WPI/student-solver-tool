@@ -51,7 +51,7 @@ export function SectionInfoCard({ section }: SectionInfoCardProps) {
         <CardTitle>Section Info</CardTitle>
       </CardHeader>
 
-      <CardContent className="space-y-1 text-sm">
+      <CardContent className="gap-1 text-sm">
         <div>
           <p>
             <span className="font-medium">Instructor: </span>
