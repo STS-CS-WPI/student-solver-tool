@@ -172,9 +172,7 @@ function TermComboboxInternal() {
 
                     {/* always mark the active term with a badge */}
                     {term.id === active?.id && (
-                      <Badge className="font-sm px-1 py-0 leading-tight">
-                        Active
-                      </Badge>
+                      <Badge variant="success">Active</Badge>
                     )}
 
                     {/* selected term gets a checkmark next to it */}

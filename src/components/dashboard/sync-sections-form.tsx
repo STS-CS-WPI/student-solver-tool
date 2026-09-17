@@ -34,6 +34,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -266,10 +267,12 @@ function CourseListingApiForm({ year, termLetter }: SyncSectionsFormProps) {
               NOTE: submitting this data will delete all the current sections in
               the database.
             </p>
+          </CardDescription>
+          <CardAction>
             <Button
               onClick={handleRefetch}
               disabled={courselistingApi.isRefetching}
-              className="ml-auto w-fit"
+              variant="outline"
               size="sm"
             >
               <RefreshCwIcon
@@ -277,7 +280,7 @@ function CourseListingApiForm({ year, termLetter }: SyncSectionsFormProps) {
               />{" "}
               Re-fetch
             </Button>
-          </CardDescription>
+          </CardAction>
         </CardHeader>
         <CardContent>
           <div className="no-scrollbar -mx-4 max-h-[50vh] overflow-y-auto px-4">

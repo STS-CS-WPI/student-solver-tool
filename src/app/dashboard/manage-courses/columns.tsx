@@ -103,7 +103,7 @@ export const createColumns = (): ColumnDef<CourseRow>[] => [
     ),
     cell: ({ row }) => {
       const { academicLevel } = row.original;
-      return <Badge>{humanizeKey(academicLevel)}</Badge>;
+      return <Badge variant="outline">{humanizeKey(academicLevel)}</Badge>;
     },
     filterFn: "equals",
   },

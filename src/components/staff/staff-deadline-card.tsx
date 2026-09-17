@@ -7,6 +7,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { CheckCircle, AlertCircle, Clock, Calendar } from "lucide-react";
 import Link from "next/link";
 
@@ -60,7 +61,7 @@ export const DeadlineCard: React.FC<DeadlineCardProps> = ({
           <div>
             <div className="my-2 flex items-center justify-between">
               <CardTitle>Assistant Preferences Deadline</CardTitle>
-              <div className="flex items-center text-green-600">
+              <div className="text-success flex items-center">
                 <CheckCircle className="h-5 w-5" />
                 <span className="font-medium">Submitted</span>
               </div>
@@ -102,26 +103,20 @@ export const DeadlineCard: React.FC<DeadlineCardProps> = ({
             <div>
               <div className="flex items-center">
                 {isOverdue ? (
-                  <div className="bg-destructive/10 rounded-lg p-3">
-                    <p className="text-destructive text-sm font-medium">
-                      Overdue by {Math.abs(daysUntilDeadline)} day
-                      {Math.abs(daysUntilDeadline) !== 1 ? "s" : ""}
-                    </p>
-                  </div>
+                  <Badge variant="destructive">
+                    Overdue by {Math.abs(daysUntilDeadline)} day
+                    {Math.abs(daysUntilDeadline) !== 1 ? "s" : ""}
+                  </Badge>
                 ) : isUrgent ? (
-                  <div className="bg-warning/10 rounded-lg p-3">
-                    <p className="text-warning text-sm font-medium">
-                      {daysUntilDeadline} day
-                      {daysUntilDeadline !== 1 ? "s" : ""} remaining
-                    </p>
-                  </div>
+                  <Badge variant="warning">
+                    {daysUntilDeadline} day
+                    {daysUntilDeadline !== 1 ? "s" : ""} remaining
+                  </Badge>
                 ) : (
-                  <div className="bg-primary/10 rounded-lg p-3">
-                    <p className="text-primary text-sm font-medium">
-                      {daysUntilDeadline} day
-                      {daysUntilDeadline !== 1 ? "s" : ""} until deadline
-                    </p>
-                  </div>
+                  <Badge variant="soft">
+                    {daysUntilDeadline} day
+                    {daysUntilDeadline !== 1 ? "s" : ""} until deadline
+                  </Badge>
                 )}
               </div>
               <Link href="/preferences-form">

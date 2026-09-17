@@ -55,7 +55,7 @@ export default async function PreferencesFormPage(props: PageProps) {
   return (
     <div className="flex flex-col space-y-4 px-4">
       {isFillingOnBehalf && (
-        <Banner variant="amber">
+        <Banner variant="warning">
           <InfoIcon />
           <BannerTitle>Heads up!</BannerTitle>
           <BannerDescription>

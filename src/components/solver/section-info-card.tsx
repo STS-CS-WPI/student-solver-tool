@@ -172,7 +172,11 @@ export function SectionInfoCard({ section }: SectionInfoCardProps) {
                           title="This staff is a preference of this professor"
                         >
                           <TableCell className="flex items-center gap-2 font-medium">
-                            <Badge variant="success" className="px-1">
+                            <Badge
+                              variant="success"
+                              className="px-1"
+                              aria-label="Preferred by professor"
+                            >
                               <CheckIcon className="size-4" />
                             </Badge>
                             {s.name}
@@ -187,7 +191,11 @@ export function SectionInfoCard({ section }: SectionInfoCardProps) {
                           title="This staff is an anti-preference of this professor"
                         >
                           <TableCell className="flex items-center gap-2 font-medium">
-                            <Badge variant="destructive" className="px-1">
+                            <Badge
+                              variant="destructive"
+                              className="px-1"
+                              aria-label="Avoided by professor"
+                            >
                               <XIcon className="size-4" />
                             </Badge>
                             {s.name}

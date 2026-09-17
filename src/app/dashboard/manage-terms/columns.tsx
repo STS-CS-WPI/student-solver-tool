@@ -39,7 +39,7 @@ export const createColumns = (): ColumnDef<TermRow>[] => [
     accessorKey: "active",
     header: "Status",
     cell: ({ row }) => (
-      <Badge variant={row.original.active ? "default" : "outline"}>
+      <Badge variant={row.original.active ? "success" : "secondary"}>
         {row.original.active ? "Active" : "Inactive"}
       </Badge>
     ),

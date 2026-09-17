@@ -5,7 +5,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { Badge } from "../ui/badge";
+import { RoleBadges } from "@/components/role-badge";
 import { Button } from "../ui/button";
 import type { RouterOutputs } from "@/trpc/react";
 import { BaseScheduleSelector, slotToDate } from "@/lib/schedule-selector";
@@ -46,15 +46,7 @@ export function StaffItem({
             <div className="p-0">
               <div className="flex gap-2 font-semibold">
                 <p>{name}</p>
-                {roles.map((role) => (
-                  <Badge
-                    key={role}
-                    className="text-xs capitalize"
-                    variant="secondary"
-                  >
-                    {role}
-                  </Badge>
-                ))}
+                <RoleBadges roles={roles} />
               </div>
               <p className="text-muted-foreground text-sm">{email}</p>
             </div>

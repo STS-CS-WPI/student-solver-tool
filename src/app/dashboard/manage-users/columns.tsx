@@ -4,7 +4,7 @@ import { type ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Lock, Unlock, CheckIcon, XIcon } from "lucide-react";
-import type { Role } from "@prisma/client";
+import { RoleBadges } from "@/components/role-badge";
 
 import { CopyButton } from "@/components/copy-button";
 import { DataTableColumnHeader } from "@/components/data-table";
@@ -19,18 +19,6 @@ import {
 import { GlobalSuspense } from "@/components/global-suspense";
 import StaffDashboardFormSumary from "@/components/staff/staff-dashboard-form-summary";
 import { CoursesCard } from "@/components/professor/professor-dashboard/courses-card";
-
-const ROLE_COLORS: Record<Role, string> = {
-  PLA: "bg-primary/20 text-primary border-primary/30",
-  TA: "bg-chart-5/20 text-chart-5 border-chart-5/30",
-  GLA: "bg-chart-2/20 text-chart-2 border-chart-2/30",
-  PROFESSOR: "bg-chart-3/20 text-chart-3 border-chart-3/30",
-  COORDINATOR: "bg-warning/20 text-warning border-warning/30",
-} as const;
-
-const getRoleBadgeClass = (role: Role): string => {
-  return ROLE_COLORS[role];
-};
 
 export const createColumns = (
   selectedTermId: string,
@@ -81,19 +69,7 @@ export const createColumns = (
     header: "Role",
     cell: ({ row }) => {
       const roles = row.original.roles ?? [];
-      return (
-        <div className="flex flex-wrap gap-1">
-          {roles.map((role) => (
-            <Badge
-              key={role}
-              variant="outline"
-              className={getRoleBadgeClass(role)}
-            >
-              {role}
-            </Badge>
-          ))}
-        </div>
-      );
+      return <RoleBadges roles={roles} />;
     },
     filterFn: "arrIncludesSome",
   },
@@ -117,8 +93,8 @@ export const createColumns = (
         <HoverCard>
           <HoverCardTrigger>
             <Badge
-              variant={hasPreference ? "success" : "destructive"}
-              className="text-xs hover:underline"
+              variant={hasPreference ? "success" : "warning"}
+              className="hover:underline"
             >
               {hasPreference ? (
                 <>
@@ -164,14 +140,14 @@ export const createColumns = (
       const locked = row.original.locked;
 
       return (
-        <Badge variant={locked ? "destructive" : "success"} className="text-xs">
+        <Badge variant={locked ? "warning" : "secondary"}>
           {locked ? (
             <>
-              <Lock className="mr-1 h-3 w-3" /> Locked
+              <Lock /> Locked
             </>
           ) : (
             <>
-              <Unlock className="mr-1 h-3 w-3" /> Unlocked
+              <Unlock /> Unlocked
             </>
           )}
         </Badge>

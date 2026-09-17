@@ -31,20 +31,21 @@ const Toaster = ({ ...props }: ToasterProps) => {
       }}
       style={
         {
+          fontFamily: "var(--font-sans)",
           "--normal-bg": "var(--popover)",
           "--normal-text": "var(--popover-foreground)",
           "--normal-border": "var(--border)",
-          "--success-bg": "var(--success)",
-          "--success-border": "var(--success)",
-          "--success-text": "var(--foreground)",
+          "--success-bg": "var(--popover)",
+          "--success-border": "var(--border)",
+          "--success-text": "var(--success)",
 
-          "--error-bg": "var(--destructive)",
-          "--error-border": "var(--destructive)",
-          "--error-text": "var(--primary-foreground)",
+          "--error-bg": "var(--popover)",
+          "--error-border": "var(--border)",
+          "--error-text": "var(--destructive)",
 
-          "--warning-bg": "var(--warning)",
-          "--warning-border": "var(--warning)",
-          "--warning-text": "var(--foreground)",
+          "--warning-bg": "var(--popover)",
+          "--warning-border": "var(--border)",
+          "--warning-text": "var(--warning)",
 
           "--info-bg": "var(--popover)",
           "--info-text": "var(--popover-foreground)",
@@ -56,7 +57,12 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         duration: 5000,
         classNames: {
-          toast: "cn-toast",
+          toast:
+            "cn-toast focus-visible:border-ring! focus-visible:shadow-[0_4px_12px_rgba(0,0,0,0.1)]! focus-visible:ring-3! focus-visible:ring-ring/50!",
+          closeButton:
+            "hover:border-border! hover:bg-muted! hover:text-foreground! focus-visible:border-ring! focus-visible:ring-3! focus-visible:ring-ring/50!",
+          actionButton: "focus-visible:ring-3! focus-visible:ring-ring/50!",
+          cancelButton: "focus-visible:ring-3! focus-visible:ring-ring/50!",
         },
       }}
       {...props}
