@@ -156,7 +156,7 @@ export default function ManageUsersContent() {
                     </Button>
                     <Button
                       onClick={() => handleLockAll(selectedIds)}
-                      variant="destructive"
+                      variant="outline"
                       disabled={lockAllMutation.isPending || !anySelectedRows}
                       title="Lock selected users ability to fill out the preference form"
                     >
