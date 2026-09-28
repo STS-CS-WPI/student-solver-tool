@@ -26,7 +26,10 @@ export default async function DevDock() {
       >
         <Button>{session?.user.roles.join(", ")}</Button>
       </SheetTrigger>
-      <SheetContent side="bottom" className="h-[60vh] overflow-scroll p-0">
+      <SheetContent
+        side="bottom"
+        className="overflow-scroll p-0 data-[side=bottom]:h-[60vh]"
+      >
         <SheetHeader className="border-b px-4 py-3">
           <SheetTitle>Developer Dock</SheetTitle>
           <SheetDescription>

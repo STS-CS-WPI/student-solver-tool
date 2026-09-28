@@ -145,7 +145,7 @@ function ValidatorSheet({ termId }: { termId: string }) {
           Validator
         </Button>
       </SheetTrigger>
-      <SheetContent className="sm:max-w-lg">
+      <SheetContent className="data-[side=right]:sm:max-w-lg">
         <SheetHeader>
           <SheetTitle>Validator</SheetTitle>
           <SheetDescription>
