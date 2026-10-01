@@ -15,13 +15,13 @@ export const FormEntryComments: React.FC<ProfessorCommentBoxProps> = ({
   return (
     <Item className="px-0">
       <ItemContent>
-        <ItemTitle>Any additional comments?</ItemTitle>
+        <ItemTitle>Additional comments</ItemTitle>
       </ItemContent>
 
       <Textarea
         value={comment ?? ""}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Please leave any additional comments here..."
+        placeholder="Please leave additional comments here..."
         rows={4}
       />
     </Item>

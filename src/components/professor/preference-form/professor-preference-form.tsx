@@ -212,8 +212,8 @@ export default function ProfessorPreferenceForm({
                   </CardHeader>
                   <CardContent className="flex flex-col gap-2">
                     <SelectAssistantPref
-                      title="Do you have any assistants that you want for this section?"
-                      description="You may not receive your preference."
+                      title="Preferred assistants"
+                      description="We may not be able to assign your preferred assistants. Leave empty if you have no preference."
                       sectionId={sectionId}
                       availableAssistants={availableForPref}
                       selectedStaff={pref}
@@ -228,8 +228,8 @@ export default function ProfessorPreferenceForm({
                     />
                     <Separator />
                     <SelectAssistantPref
-                      title="Do you have any assistants that you do not want for this section?"
-                      description="You will not be placed with these staff. You are not guaranteed to be assigned any help if you put too many anti-preferences."
+                      title="Assistants to avoid"
+                      description="These assistants won't be assigned to this section. Excluding too many may leave the section without staff. Leave empty if you have no exclusions."
                       sectionId={sectionId}
                       availableAssistants={availableForAnti}
                       selectedStaff={anti}
