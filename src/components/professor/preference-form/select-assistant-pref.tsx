@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 
-import { Badge } from "@/components/ui/badge";
+import { RoleBadges } from "@/components/role-badge";
 import {
   Combobox,
   ComboboxChip,
@@ -110,9 +110,7 @@ export const SelectAssistantPref: React.FC<SelectAssistantPreferenceProps> = ({
                     <ItemContent>
                       <ItemTitle className="whitespace-nowrap">
                         {assistant.name}{" "}
-                        <Badge variant="outline">
-                          {assistant.roles?.join(", ")}
-                        </Badge>
+                        <RoleBadges roles={assistant.roles ?? []} />
                       </ItemTitle>
                       <ItemDescription>{assistant.email}</ItemDescription>
                     </ItemContent>

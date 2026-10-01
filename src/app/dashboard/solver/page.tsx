@@ -345,10 +345,10 @@ export default function SolverPage() {
           onDragCancel={handleDragCancel}
         >
           <ResizablePanelGroup
-            direction="horizontal"
+            orientation="horizontal"
             className="h-full min-h-0"
           >
-            <ResizablePanel defaultSize={70} className="min-h-0">
+            <ResizablePanel defaultSize="70%" className="min-h-0">
               <GlobalSuspense>
                 <SectionAccordion
                   selected={selectedSectionId}
@@ -361,9 +361,9 @@ export default function SolverPage() {
             </ResizablePanel>
             <ResizableHandle withHandle />
             <ResizablePanel
-              defaultSize={30}
-              maxSize={50}
-              minSize={12}
+              defaultSize="30%"
+              maxSize="50%"
+              minSize="12%"
               className="min-h-0"
             >
               <aside className="relative h-full">

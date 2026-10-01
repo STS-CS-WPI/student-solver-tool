@@ -26,6 +26,7 @@ import {
 import { BanIcon, CheckIcon, ChevronDownIcon, InfoIcon } from "lucide-react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
+import { RoleBadges } from "@/components/role-badge";
 import { type ReactNode } from "react";
 import { humanizeKey } from "@/lib/utils";
 import type { IllegalAssignment } from "@/server/api/routers/validator";
@@ -112,7 +113,7 @@ function AssignmentTable({
               </TableCell>
               <TableCell>{user.email}</TableCell>
               <TableCell>
-                <Badge className="text-xs">{user.roles.join(", ")}</Badge>
+                <RoleBadges roles={user.roles} />
               </TableCell>
             </TableRow>
           ))}
@@ -161,9 +162,7 @@ function ValidatorCourseSchedulingNeedsMet({ termId }: ValidatorDisplayProps) {
                 </TableCell>
                 <TableCell className="text-right">{section.percent}%</TableCell>
                 <TableCell className="text-right">
-                  <Badge className="text-xs" variant="warning">
-                    Short
-                  </Badge>
+                  <Badge variant="warning">Short</Badge>
                 </TableCell>
               </TableRow>
             ))}
@@ -218,9 +217,7 @@ function ValidatorCourseHelpHoursNeedsMet({ termId }: ValidatorDisplayProps) {
                 </TableCell>
                 <TableCell className="text-right">{section.delta}h</TableCell>
                 <TableCell className="text-right">
-                  <Badge className="text-xs" variant="warning">
-                    {section.status}
-                  </Badge>
+                  <Badge variant="warning">{section.status}</Badge>
                 </TableCell>
               </TableRow>
             ))}
@@ -366,7 +363,7 @@ function ValidatorStaffGotPreferences({ termId }: ValidatorDisplayProps) {
                   </TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
-                    <Badge className="text-xs">{user.roles.join(", ")}</Badge>
+                    <RoleBadges roles={user.roles} />
                   </TableCell>
                 </TableRow>
               ))}

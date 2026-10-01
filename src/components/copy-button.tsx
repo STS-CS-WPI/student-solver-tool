@@ -40,7 +40,6 @@ export function CopyButton({
       variant={variant}
       size={size}
       title={title}
-      className="p-0"
       {...props}
     >
       {copied ? <Check /> : <CopyIcon />}

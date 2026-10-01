@@ -52,7 +52,7 @@ const ProfessorAssignmentsCard: React.FC<ProfessorAssignmentsCardProps> = ({
           Staff assigned to your courses for this term
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="gap-4">
         {sections.length === 0 && <p>No sections!</p>}
         {sections.map((section) => (
           <Card key={section.sectionId}>
@@ -72,7 +72,7 @@ const ProfessorAssignmentsCard: React.FC<ProfessorAssignmentsCardProps> = ({
                 </CopyButton>
               </CardAction>
             </CardHeader>
-            <CardContent className="space-y-1">
+            <CardContent className="gap-1">
               {section.assignedStaff.length === 0 && (
                 <p>No staff assigned for this term.</p>
               )}

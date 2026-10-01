@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { RoleBadges } from "@/components/role-badge";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { AssignmentTable } from "@/components/dashboard/assignment-table";
@@ -306,17 +307,14 @@ export default function DashboardContent() {
                       <div className="hover:bg-muted/80 group border-border bg-muted/50 flex items-center justify-between rounded-lg border p-4 transition-all">
                         <div className="flex-1">
                           <p className="text-foreground font-medium">
-                            {person.name}{" "}
-                            <Badge variant="outline" className="text-xs">
-                              {person.roles.join(", ")}
-                            </Badge>
+                            {person.name} <RoleBadges roles={person.roles} />
                           </p>
                           <p className="text-muted-foreground mt-0.5 text-sm">
                             {person.email}
                           </p>
                         </div>
                         <Badge
-                          variant="destructive"
+                          variant="warning"
                           className="ml-4 shrink-0 transition-transform group-hover:scale-105"
                         >
                           Not Submitted
@@ -387,7 +385,7 @@ export default function DashboardContent() {
                         <div className="flex-1">
                           <p className="text-foreground font-medium">
                             {person.name}{" "}
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="secondary">
                               {person.courseCount} course(s)
                             </Badge>
                           </p>
@@ -396,7 +394,7 @@ export default function DashboardContent() {
                           </p>
                         </div>
                         <Badge
-                          variant="destructive"
+                          variant="warning"
                           className="ml-4 shrink-0 transition-transform group-hover:scale-105"
                         >
                           Not Submitted
