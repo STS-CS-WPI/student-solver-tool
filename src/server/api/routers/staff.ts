@@ -7,7 +7,7 @@ import {
 } from "../trpc";
 import { TRPCError } from "@trpc/server";
 import { Role, type Day, type PreferenceLevel } from "@prisma/client";
-import { updateUserInputSchema } from "@/types/form-inputs";
+import { nameSchema, updateUserInputSchema } from "@/types/form-inputs";
 
 type StaffMember = {
   id: string;
@@ -205,7 +205,7 @@ export const staffRoute = createTRPCRouter({
     .input(
       z.object({
         email: z.string().email(),
-        name: z.string(),
+        name: nameSchema,
         role: z.nativeEnum(Role),
         hours: z.number().optional(),
       }),

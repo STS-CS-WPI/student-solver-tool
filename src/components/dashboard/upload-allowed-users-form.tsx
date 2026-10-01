@@ -13,7 +13,10 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { CSVDropzone } from "@/components/csv-dropzone";
 import { Button } from "@/components/ui/button";
-import { createUserInputSchema } from "@/types/form-inputs";
+import {
+  createUserFormSchema,
+  createUserInputSchema,
+} from "@/types/form-inputs";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -34,7 +37,7 @@ export function UploadAllowedUsersForm({
   const utils = api.useUtils();
   const form = useForm({
     mode: "onChange",
-    resolver: zodResolver(createUserInputSchema),
+    resolver: zodResolver(createUserFormSchema),
     defaultValues: { email: "", name: "", role: Role.PLA },
   });
 
@@ -58,7 +61,7 @@ export function UploadAllowedUsersForm({
     uploadUsers.mutate({ users, termId });
   }
 
-  function onSubmitOne(user: z.infer<typeof createUserInputSchema>) {
+  function onSubmitOne(user: z.infer<typeof createUserFormSchema>) {
     onSubmitArray([user]);
   }
 
@@ -87,7 +90,7 @@ export function UploadAllowedUsersForm({
               disabled={uploadUsers.isPending}
               dedupeBy={(row) => row.email}
               exampleRow={{
-                name: "Boktor, Mina",
+                name: "Mina Boktor",
                 email: "mboktor@wpi.edu",
                 role: "PLA",
               }}
@@ -108,8 +111,8 @@ export function UploadAllowedUsersForm({
                       control={form.control}
                       name="name"
                       label="Name"
-                      description='Must be in the format "last, first"'
-                      placeholder="Boktor, Mina"
+                      description='Must be in the format "First Last"'
+                      placeholder="Mina Boktor"
                     />
                     <FormInput
                       control={form.control}
