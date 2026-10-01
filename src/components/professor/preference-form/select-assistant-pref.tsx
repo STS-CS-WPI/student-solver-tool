@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useId, useMemo } from "react";
 
 import { RoleBadges } from "@/components/role-badge";
 import {
@@ -14,14 +14,13 @@ import {
   ComboboxList,
   ComboboxValue,
 } from "@/components/ui/combobox";
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import {
   Item,
-  ItemActions,
   ItemContent,
   ItemDescription,
   ItemTitle,
 } from "@/components/ui/item";
-import { Switch } from "@/components/ui/switch";
 import type { User } from "next-auth";
 
 type SelectAssistantPreferenceProps = {
@@ -41,7 +40,8 @@ export const SelectAssistantPref: React.FC<SelectAssistantPreferenceProps> = ({
   selectedStaff,
   onChange,
 }) => {
-  const [enabled, setEnabled] = useState(selectedStaff.length > 0);
+  const inputId = useId();
+  const descriptionId = useId();
 
   const byId = useMemo(() => {
     const m = new Map<string, User>();
@@ -54,73 +54,58 @@ export const SelectAssistantPref: React.FC<SelectAssistantPreferenceProps> = ({
     [selectedStaff],
   );
   return (
-    <div>
-      <Item className="px-0">
-        <ItemContent>
-          <ItemTitle>{title}</ItemTitle>
-          <ItemDescription>{description}</ItemDescription>
-        </ItemContent>
-        <ItemActions>
-          No
-          <Switch
-            checked={enabled}
-            onCheckedChange={(next) => {
-              setEnabled(next);
-              if (!next) onChange([]);
-            }}
+    <Field className="py-3.5">
+      <FieldLabel htmlFor={inputId}>{title}</FieldLabel>
+      <FieldDescription id={descriptionId}>{description}</FieldDescription>
+      <Combobox
+        items={availableAssistants}
+        multiple
+        value={selectedIds}
+        onValueChange={(next) => {
+          const ids = Array.isArray(next) ? next : next ? [next] : [];
+          const staff = ids
+            .map((id) => byId.get(id))
+            .filter((user): user is User => user != undefined);
+          onChange(staff);
+        }}
+      >
+        <ComboboxChips>
+          <ComboboxValue>
+            {selectedIds.map((id) => (
+              <ComboboxChip key={`${sectionId}-${id}`}>
+                {byId.get(id)?.name ?? id}
+              </ComboboxChip>
+            ))}
+          </ComboboxValue>
+          <ComboboxChipsInput
+            id={inputId}
+            aria-describedby={descriptionId}
+            className="text-base"
+            placeholder="Select staff..."
           />
-          Yes
-        </ItemActions>
-      </Item>
-      {enabled && (
-        <Combobox
-          items={availableAssistants}
-          multiple
-          value={selectedIds}
-          onValueChange={(next) => {
-            const ids = Array.isArray(next) ? next : next ? [next] : [];
-            const staff = ids
-              .map((id) => byId.get(id))
-              .filter((user): user is User => user != undefined);
-            onChange(staff);
-          }}
-        >
-          <ComboboxChips>
-            <ComboboxValue>
-              {selectedIds.map((id) => (
-                <ComboboxChip key={`${sectionId}-${id}`}>
-                  {byId.get(id)?.name ?? id}
-                </ComboboxChip>
-              ))}
-            </ComboboxValue>
-            <ComboboxChipsInput
-              className="text-base"
-              placeholder="Select staff..."
-            />
-          </ComboboxChips>
-          <ComboboxContent className="min-w-[250px]">
-            <ComboboxEmpty>No staff found.</ComboboxEmpty>
-            <ComboboxList>
-              {(assistant: User) => (
-                <ComboboxItem
-                  key={`${sectionId}-${assistant.id}`}
-                  value={assistant.id}
-                >
-                  <Item size="sm" className="p-0">
-                    <ItemContent>
-                      <ItemTitle className="whitespace-nowrap">
-                        {assistant.name}{" "}
-                        <RoleBadges roles={assistant.roles ?? []} />
-                      </ItemTitle>
-                      <ItemDescription>{assistant.email}</ItemDescription>
-                    </ItemContent>
-                  </Item>
-                </ComboboxItem>
-              )}
-            </ComboboxList>
-          </ComboboxContent>
-        </Combobox>
-      )}
-    </div>
+        </ComboboxChips>
+        <ComboboxContent className="min-w-[250px]">
+          <ComboboxEmpty>No staff found.</ComboboxEmpty>
+          <ComboboxList>
+            {(assistant: User) => (
+              <ComboboxItem
+                key={`${sectionId}-${assistant.id}`}
+                value={assistant.id}
+              >
+                <Item size="sm" className="p-0">
+                  <ItemContent>
+                    <ItemTitle className="whitespace-nowrap">
+                      {assistant.name}{" "}
+                      <RoleBadges roles={assistant.roles ?? []} />
+                    </ItemTitle>
+                    <ItemDescription>{assistant.email}</ItemDescription>
+                  </ItemContent>
+                </Item>
+              </ComboboxItem>
+            )}
+          </ComboboxList>
+        </ComboboxContent>
+      </Combobox>
+    </Field>
   );
 };

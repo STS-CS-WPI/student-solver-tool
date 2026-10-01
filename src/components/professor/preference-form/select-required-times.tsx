@@ -1,20 +1,19 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
 import {
   BaseScheduleSelector,
   dateToSlot,
   slotToDate,
 } from "@/lib/schedule-selector";
 import { isSlot, type Slot } from "@/lib/schedule-coverage";
-import {
-  Item,
-  ItemActions,
-  ItemContent,
-  ItemDescription,
-  ItemTitle,
-} from "@/components/ui/item";
-import { Switch } from "@/components/ui/switch";
 
 type SelectRequiredTimesProps = {
   timesRequired: Slot[];
@@ -25,45 +24,46 @@ export const SelectRequiredTimes: React.FC<SelectRequiredTimesProps> = ({
   timesRequired,
   onChange,
 }) => {
-  const [enabled, setEnabled] = useState((timesRequired?.length ?? 0) > 0);
-
   return (
-    <div>
-      <Item className="px-0">
-        <ItemContent>
-          <ItemTitle>
-            Do you need any in person help for this section?
-          </ItemTitle>
-          <ItemDescription>
-            Please only request the times you absolutely need. Requesting a lot
-            of slots may lead to poor assignments.
-          </ItemDescription>
-        </ItemContent>
-        <ItemActions>
-          No
-          <Switch
-            checked={enabled}
-            onCheckedChange={(next) => {
-              setEnabled(next);
-              if (!next) onChange([]);
-            }}
-          />
-          Yes
-        </ItemActions>
-      </Item>
-
-      {enabled && (
-        <div className="flex w-full flex-col items-center justify-center p-4">
-          <div className="w-full max-w-3xl">
-            <BaseScheduleSelector
-              selection={timesRequired.map(slotToDate)}
-              onChange={(dates) =>
-                onChange(dates.map(dateToSlot).filter(isSlot))
-              }
-            />
+    <Accordion
+      type="single"
+      collapsible
+      defaultValue={timesRequired.length > 0 ? "required-times" : undefined}
+    >
+      <AccordionItem value="required-times">
+        <AccordionTrigger type="button">
+          In-person help needed?
+        </AccordionTrigger>
+        <AccordionContent className="[&_p:not(:last-child)]:mb-0">
+          <div className="flex flex-col gap-4">
+            <p className="text-muted-foreground">
+              Request only the times you absolutely need. Requesting many slots
+              may lead to poor assignments. Leave empty if you don&apos;t need
+              in-person help.
+            </p>
+            <div className="mx-auto w-full max-w-3xl">
+              <BaseScheduleSelector
+                selection={timesRequired.map(slotToDate)}
+                onChange={(dates) =>
+                  onChange(dates.map(dateToSlot).filter(isSlot))
+                }
+              />
+            </div>
+            {timesRequired.length > 0 && (
+              <div className="flex justify-end">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onChange([])}
+                >
+                  Clear requested times
+                </Button>
+              </div>
+            )}
           </div>
-        </div>
-      )}
-    </div>
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
   );
 };
