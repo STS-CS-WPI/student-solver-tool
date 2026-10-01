@@ -63,6 +63,9 @@ export const staffRoute = createTRPCRouter({
             user: {
               sectionAssignments: {
                 none: {
+                  section: {
+                    termId,
+                  },
                   OR: [
                     { sectionId }, // already assigned to this section
                     { AND: [{ locked: true }, { NOT: { sectionId } }] }, // locked on a different section
