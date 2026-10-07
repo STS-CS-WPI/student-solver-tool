@@ -42,13 +42,15 @@ export function SectionAccordion({
       >
         {classes.map((section) => (
           <AccordionItem value={section.id} key={section.id} className="px-4">
-            <AccordionTrigger className="flex flex-row items-center text-xl">
-              {toFullCourseName(
-                section.courseCode,
-                section.courseSection,
-                section.title,
-              )}
-              <div className="ml-auto flex space-x-2">
+            <AccordionTrigger className="items-center gap-2 text-xl">
+              <span className="min-w-0 flex-1">
+                {toFullCourseName(
+                  section.courseCode,
+                  section.courseSection,
+                  section.title,
+                )}
+              </span>
+              <div className="flex shrink-0 space-x-2">
                 <SectionSolverScheduleCoverage
                   needed={section.professor.timesRequired}
                   assigned={section.staff.flatMap((s) => s.timesAvailable)}
@@ -64,7 +66,7 @@ export function SectionAccordion({
                 />
               </div>
             </AccordionTrigger>
-            <AccordionContent className="flex space-x-4 text-balance">
+            <AccordionContent className="flex space-x-4 text-balance [&_p:not(:last-child)]:mb-0!">
               <SectionInfoCard section={section} />
               <AssignedAssistantsCard
                 section={section}
