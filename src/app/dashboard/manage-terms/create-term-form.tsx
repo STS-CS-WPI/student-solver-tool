@@ -21,8 +21,10 @@ import type z from "zod";
 import { FormDateTimeLocal, FormInput, FormSelect } from "@/components/form";
 import { SelectItem } from "@/components/ui/select";
 import { toast } from "sonner";
+import { useState } from "react";
 
 export function CreateTermDialogForm() {
+  const [open, setOpen] = useState(false);
   const utils = api.useUtils();
   const form = useForm({
     resolver: zodResolver(createTermInputSchema),
@@ -42,6 +44,7 @@ export function CreateTermDialogForm() {
     },
     onSuccess: async () => {
       toast.success("Successfully created a term!");
+      setOpen(false);
       await utils.term.getTermStats.invalidate();
       form.reset();
     },
@@ -52,7 +55,7 @@ export function CreateTermDialogForm() {
   }
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
           <PlusIcon /> Create new term
