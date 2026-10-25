@@ -45,11 +45,14 @@ export function DataTableViewOptions<TData>({
             return (
               <DropdownMenuCheckboxItem
                 key={column.id}
-                className="capitalize"
                 checked={column.getIsVisible()}
                 onCheckedChange={(value) => column.toggleVisibility(!!value)}
               >
-                <span className="min-w-0 wrap-anywhere">{column.id}</span>
+                <span className="min-w-0 wrap-anywhere">
+                  {typeof column.columnDef.header === "string"
+                    ? column.columnDef.header
+                    : column.id}
+                </span>
               </DropdownMenuCheckboxItem>
             );
           })}
