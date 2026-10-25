@@ -12,6 +12,25 @@ export const studentDashboardRoute = createTRPCRouter({
   getPreferencesFormData: assistantProcedure
     .input(baseInput)
     .query(async ({ input: { userId, termId }, ctx }) => {
+      if (
+        !hasPermission(
+          ctx.session.user,
+          "staffPreferenceForm",
+          "viewActiveTerm",
+          {
+            userId,
+            isAllowedInActiveTerm: await isUserAllowedInActiveTerm(
+              ctx.session.user.id,
+            ),
+          },
+        )
+      ) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: `Cannot access qualifications for other users.`,
+        });
+      }
+
       const staffPref = await ctx.db.staffPreference.findUnique({
         where: { userId_termId: { userId, termId } },
         include: {

@@ -61,20 +61,21 @@ export const authConfig = {
   session: { strategy: "jwt" },
   adapter: PrismaAdapter(db),
   callbacks: {
-    async jwt({ token, user, trigger }) {
-      // Only do DB work when the token is created/updated
-      const shouldHydrate =
-        trigger === "signIn" || trigger === "update" || !!user;
+    async jwt({ token, user }) {
+      const id = user?.id ?? token.id ?? token.sub;
+      if (!id) return null;
 
-      if (shouldHydrate) {
-        if (user?.id) token.id = user.id;
+      const currentUser = await db.user.findUnique({
+        where: { id },
+        select: {
+          roles: { select: { role: true } },
+        },
+      });
 
-        const email = user?.email ?? token.email;
-        if (email) {
-          token.roles = await getAllowedRolesForEmail(email);
-        }
-      }
+      if (!currentUser) return null;
 
+      token.id = id;
+      token.roles = currentUser.roles.map(({ role }) => role);
       return token;
     },
 
