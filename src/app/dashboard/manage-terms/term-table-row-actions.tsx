@@ -24,9 +24,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { DropdownMenuLabel as _Ignore } from "@/components/ui/dropdown-menu";
+import { useRef, useState } from "react";
 
 export function TermTableRowActions({ term }: { term: TermRow }) {
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const menuTriggerRef = useRef<HTMLButtonElement>(null);
   const utils = api.useUtils();
 
   const deleteTerm = api.term.deleteTerm.useMutation({
@@ -93,18 +95,21 @@ export function TermTableRowActions({ term }: { term: TermRow }) {
     <div className="text-right">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="size-8">
+          <Button
+            ref={menuTriggerRef}
+            variant="ghost"
+            size="icon"
+            className="size-8"
+          >
             <MoreHorizontalIcon />
             <span className="sr-only">Open menu</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <UploadAllowedUsersForm termId={term.id}>
-            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-              Upload users
-            </DropdownMenuItem>
-          </UploadAllowedUsersForm>
+          <DropdownMenuItem onSelect={() => setUploadOpen(true)}>
+            Upload users
+          </DropdownMenuItem>
           <SyncSectionsForm year={term.year} termLetter={term.termLetter}>
             <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
               Add section(s)
@@ -168,6 +173,17 @@ export function TermTableRowActions({ term }: { term: TermRow }) {
           </AlertDialog>
         </DropdownMenuContent>
       </DropdownMenu>
+      <UploadAllowedUsersForm
+        termId={term.id}
+        open={uploadOpen}
+        onOpenChange={setUploadOpen}
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          menuTriggerRef.current?.focus();
+        }}
+      >
+        {null}
+      </UploadAllowedUsersForm>
     </div>
   );
 }
