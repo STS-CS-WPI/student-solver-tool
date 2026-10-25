@@ -29,7 +29,10 @@ export function DataTableViewOptions<TData>({
           <Settings2 /> View
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[150px]">
+      <DropdownMenuContent
+        align="end"
+        className="w-max max-w-(--radix-dropdown-menu-content-available-width) min-w-37.5"
+      >
         <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {table
@@ -46,7 +49,7 @@ export function DataTableViewOptions<TData>({
                 checked={column.getIsVisible()}
                 onCheckedChange={(value) => column.toggleVisibility(!!value)}
               >
-                {column.id}
+                <span className="min-w-0 wrap-anywhere">{column.id}</span>
               </DropdownMenuCheckboxItem>
             );
           })}
