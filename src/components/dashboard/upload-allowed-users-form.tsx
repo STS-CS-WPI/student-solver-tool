@@ -10,7 +10,7 @@ import { api } from "@/trpc/react";
 import { Role } from "@prisma/client";
 import { toast } from "sonner";
 
-import { z } from "zod";
+import type { z } from "zod";
 import { CSVDropzone } from "@/components/csv-dropzone";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,17 +23,32 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FieldGroup } from "../ui/field";
 import { FormCombobox, FormInput } from "../form";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { useState, type ReactNode } from "react";
+import { useState, type ComponentProps, type ReactNode } from "react";
 import { PlusCircleIcon } from "lucide-react";
 
 export function UploadAllowedUsersForm({
   termId,
-  children,
+  children = (
+    <Button>
+      <PlusCircleIcon /> Add Users
+    </Button>
+  ),
+  open: controlledOpen,
+  onOpenChange,
+  onCloseAutoFocus,
 }: {
   termId: string;
   children?: ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  onCloseAutoFocus?: ComponentProps<typeof DialogContent>["onCloseAutoFocus"];
 }) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen ?? internalOpen;
+  function setOpen(open: boolean) {
+    setInternalOpen(open);
+    onOpenChange?.(open);
+  }
   const utils = api.useUtils();
   const form = useForm({
     mode: "onChange",
@@ -67,14 +82,11 @@ export function UploadAllowedUsersForm({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {children ?? (
-          <Button>
-            <PlusCircleIcon /> Add Users
-          </Button>
-        )}
-      </DialogTrigger>
-      <DialogContent className="max-h-[80vh] max-w-5xl overflow-auto sm:max-w-3xl">
+      {children && <DialogTrigger asChild>{children}</DialogTrigger>}
+      <DialogContent
+        className="max-h-[80vh] max-w-5xl overflow-auto sm:max-w-3xl"
+        onCloseAutoFocus={onCloseAutoFocus}
+      >
         <DialogHeader>
           <DialogTitle>Allowed Users</DialogTitle>
         </DialogHeader>
