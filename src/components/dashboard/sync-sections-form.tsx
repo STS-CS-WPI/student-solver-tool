@@ -157,7 +157,7 @@ function CSVCourseForm({ year, termLetter }: SyncSectionsFormProps) {
         requiredHours: 20,
         academicLevel: "UNDERGRADUATE",
         meetingPattern: "M-T-R-F | 12:00 PM - 12:50 PM",
-        professorName: "Ahrens, Matthew",
+        professorName: "Matthew Ahrens",
       }}
     />
   );

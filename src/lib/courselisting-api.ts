@@ -120,11 +120,9 @@ function mapCourses(data: ReportEntryRow[]): SectionItem[] {
     const description = entry.Course_Description;
 
     // Instructors
-    const primaryInstructor = entry.Instructors?.split("; ")[0] ?? "";
-    const [first, ...rest] = primaryInstructor.split(" ");
-    const last = rest.join(" ");
-    const professorName =
-      first && last ? `${last}, ${first}` : primaryInstructor;
+    // Keep the name exactly as the API gives it ("First Last"). Splitting it is
+    // ambiguous because people can have multiple first or last names.
+    const professorName = entry.Instructors?.split("; ")[0]?.trim() ?? "";
 
     const requiredHours = calculateRequiredAssistantHours(enrollment);
 

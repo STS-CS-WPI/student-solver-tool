@@ -50,6 +50,20 @@ export function toFullCourseName(section: string, code: string, title: string) {
   return `${section}-${code} - ${title}`;
 }
 
+/**
+ * Converts a legacy "Last, First" name to "First Last" by moving the part after
+ * the first comma in front of the part before it. Names without a comma are
+ * only trimmed. Odd inputs get flipped too and can be fixed by hand later.
+ */
+export function normalizeName(name: string): string {
+  const commaIndex = name.indexOf(",");
+  if (commaIndex === -1) return name.trim();
+
+  const last = name.slice(0, commaIndex).trim();
+  const first = name.slice(commaIndex + 1).trim();
+  return [first, last].filter(Boolean).join(" ");
+}
+
 export function normalize(str: string) {
   return str
     .toLowerCase()
