@@ -26,12 +26,6 @@ export function calculateRequiredAssistantHours(
   return blocks * 10;
 }
 
-export const isExcelName = (name: string) => /\.xlsx?$/i.test(name);
-export const isExcelType = (type: string) =>
-  type ===
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
-  type === "application/vnd.ms-excel";
-
 export function isCoordinator(user?: User): boolean {
   return user?.roles?.some((r) => r === "COORDINATOR") ?? false;
 }
