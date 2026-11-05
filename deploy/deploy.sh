@@ -2,7 +2,6 @@
 set -euo pipefail
 
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-BRANCH="main"
 DO_BACKUP=true
 BACKUP_DIR="/home/backups" # IT made it so backups here last 60 days
 
@@ -10,25 +9,21 @@ usage() {
   cat <<EOF
 Usage: $(basename "$0") [options]
 
+Deploy the current main commit using its CI-published GHCR images.
+
 Options:
-  -b, --branch <name>   Git branch to deploy (default: main)
       --no-backup       Skip SQLite backup
   -h, --help            Show this help message
 
 Examples:
   $(basename "$0")
-  $(basename "$0") --branch dev
-  $(basename "$0") -b staging --no-backup
+  $(basename "$0") --no-backup
 EOF
 }
 
 # Parse args
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    -b|--branch)
-      BRANCH="$2"
-      shift 2
-      ;;
     --no-backup)
       DO_BACKUP=false
       shift
@@ -48,7 +43,7 @@ done
 
 cd "$APP_DIR"
 
-echo "==> Deploying sts from branch: $BRANCH"
+echo "==> Deploying sts from main"
 echo "==> Repo dir: $APP_DIR"
 echo "==> Backup enabled: $DO_BACKUP"
 
@@ -58,13 +53,18 @@ if ! docker compose version >/dev/null 2>&1; then
   exit 1
 fi
 
-echo "==> Fetch + reset to origin/$BRANCH"
-git fetch origin
-git checkout "$BRANCH"
-git reset --hard "origin/$BRANCH"
+echo "==> Fetch + reset to origin/main"
+git fetch origin main
+STS_IMAGE_TAG="$(git rev-parse --verify 'FETCH_HEAD^{commit}')"
+export STS_IMAGE_TAG
+git checkout main
+git reset --hard "$STS_IMAGE_TAG"
 
-echo "==> Build images"
-docker compose build --pull
+echo "==> Pull application and migrator images for $STS_IMAGE_TAG"
+if ! docker compose --profile migrate pull sts sts-migrate; then
+  echo "ERROR: Could not pull both images for main at $STS_IMAGE_TAG. Check that both Docker jobs passed and that this server can access GHCR." >&2
+  exit 1
+fi
 
 if [[ "$DO_BACKUP" == true ]]; then
   echo "==> SQLite backup"
@@ -83,10 +83,10 @@ else
 fi
 
 echo "==> Run DB migrations"
-docker compose --profile migrate run --rm sts-migrate
+docker compose --profile migrate run --rm --pull never sts-migrate
 
 echo "==> Start / update services"
-docker compose up -d --remove-orphans
+docker compose up -d --no-build --remove-orphans
 
 echo "==> Current status:"
 docker compose ps

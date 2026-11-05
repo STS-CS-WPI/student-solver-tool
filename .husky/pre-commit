@@ -1,2 +1,2 @@
-echo ">> Running lint-staged (prettier + eslint)..."
+echo ">> Running lint-staged (Prettier)..."
 pnpm lint-staged

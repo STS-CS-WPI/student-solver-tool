@@ -1,44 +1,20 @@
----
-title: CI/CD & Docker Publishing Setup
----
+# CI and GHCR setup
 
-# CI/CD & Docker Publishing Setup
+The [CI workflow](./workflows/ci.yml) runs on pull requests and pushes to `main`, in this order:
 
-This document explains how to configure GitHub so this repository’s CI/CD pipeline can build and push Docker images to _GitHub Container Registry (GHCR)._
-This uses the provided workflows [here](../.github/workflows/).
+1. `check` runs lint, formatting, type checks, and unit tests.
+2. `e2e` runs Cypress against the development server and a temporary SQLite database.
+3. `docker` builds the `runner` and `migrator` images in parallel after both earlier jobs pass.
 
-## Repository Settings
+Pull requests build both images without publishing. Successful pushes to `main` publish:
 
-The workflows will need permission to write to the repository.
+```text
+ghcr.io/sts-cs-wpi/student-solver-tool:runner-<full-commit-sha>
+ghcr.io/sts-cs-wpi/student-solver-tool:migrator-<full-commit-sha>
+```
 
-1. Go to **Repository** → **Settings** → **Actions** → **General**
-2. Under Workflow permissions, select:
-   - **Read and write permissions**
-   - _(Optional but recommended)_ **Allow GitHub Actions to create and approve pull requests**
-3. Save.
+Publishing uses `GITHUB_TOKEN` with `packages: write`; no additional registry secret is required. If an existing package rejects publishing, grant this repository **Write** access under **Package settings → Manage Actions access**. See [GitHub's package access guide](https://docs.github.com/en/packages/learn-github-packages/configuring-a-packages-access-control-and-visibility#ensuring-workflow-access-to-your-package).
 
-This ensures the `GITHUB_TOKEN` created in workflows has permission to push to GHCR.
+Docker layers use GitHub Actions caching with separate `runner` and `migrator` scopes.
 
-## Package Repository Link
-
-GHCP packages must be linked to this repository:
-
-1. Go to https://github.com/users/OWNER/packages/container/student-solver-tool/settings
-
-   (Replace `<OWNER>` with your actual Github username or org name. This link also assumes that your repository name is called `student-solver-tool`)
-
-2. Under **Repository links**, link this repo.
-
-3. Under **Manage access**, ensure:
-
-   The repository has **Write** access
-
-   (Optional) Specific teams/users can also be granted access.
-
-## Verification
-
-To test everything works:
-
-1. Push to `main` (pr preferred)
-2. Watch the **Action** tab → `CI` workflow → `docker` job
-3. Confirm the image is published at: `ghcr.io/<OWNER>/<REPO>:<tag>`
+CI prepares its database with `prisma db push`, so it does not execute committed migration SQL. The deploy script pulls both images for the current `main` commit and runs `prisma migrate deploy`. See the [deployment instructions](../deploy/README.md).

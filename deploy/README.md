@@ -9,9 +9,7 @@ by Mina Boktor
 
 - Make sure you have sudo access. Please ask someone with sudo privileges to run this command: `sudo usermod -aG sudo <your username>`
 - After logging in, cd to `/opt/sts`. This is where the repo is cloned to, and all deploy commands will need to be ran from this directory.
-- Make sure to add the `.env` file in the project directory (/opt/sts) if this is the first ever deployment. If the `.env` file is already there, you probably won't need to edit it. Follow the instructions in the example env file to see what variables need to be set.
-  In production, the `DATABASE_URL` variable <u>**needs**</u> to be `file:/data/prod.db`.
-  Therefore, it is manually set in the `docker-compose.yml` file. Setting it to anything differently in the .env file will be ignored.
+- Create or update `/opt/sts/.env` using the instructions in [`.env.example`](../.env.example).
 
   Periodically, you will need to rotate the Microsoft Entra Id API keys.
   The app will not work without these (no one will be able to sign in).
@@ -31,20 +29,30 @@ You might need to sign out and sign back in to the server.
 
 The deploy script is in `./deploy`. Run `./deploy/deploy.sh -h` to see options.
 
-- Run `./deploy/deploy.sh -b main` to deploy the main branch, or the branch you wish to deploy.
+- Run `./deploy/deploy.sh` to deploy the current `main` commit using its application and migrator images from GitHub Container Registry.
+  If either image is unavailable, deployment stops before backup or migrations. Wait for both Docker jobs to pass and rerun.
   There will be a backup of the sqlite db made in /home/backups automatically.
   `/home/backups/` is a special directory that is backed up twice a day, and backups are kept for 60 days.
   If you wish to skip this step and not back up the database before deployment, you can run the deploy script with the `--no-backup` flag.
 
-The deploy script runs off of git. If you get a message along the lines of 'fatal: detected dubious ownership in repository at /opt/sts', 
+The deploy script runs off of git. If you get a message along the lines of 'fatal: detected dubious ownership in repository at /opt/sts',
 run the following command: `git config --global --add safe.directory /opt/sts`
 
 ## Helpful commands
 
+- To deploy with Compose directly, select a full commit SHA whose Docker jobs have passed, then pull its images before applying migrations and starting the app. Application settings still come from `.env`.
+
+```bash
+export STS_IMAGE_TAG=<full-commit-sha>
+docker compose --profile migrate pull sts sts-migrate
+docker compose --profile migrate run --rm --pull never sts-migrate
+docker compose up -d --no-build
+```
+
 - To display application logs, run:
 
 ```bash
-docker compose logs -f sts
+STS_IMAGE_TAG="$(git rev-parse HEAD)" docker compose logs -f sts
 ```
 
 - To copy the live db somewhere, you can run this command:
