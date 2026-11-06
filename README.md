@@ -14,7 +14,7 @@ Mac and Linux users are OK, but Windows users should use [WSL](https://learn.mic
 
 #### Node Versioning
 
-This project uses `nvm` to manage Node versions. There is a file named `./nvmrc` that contains the correct node version that `nvm` will install.
+This project uses `nvm` to manage Node versions. The [.nvmrc](./.nvmrc) file contains the Node version used locally and in CI.
 To install `nvm`, use one of the following commands or read their docs [here](https://github.com/nvm-sh/nvm):
 
 ```bash
@@ -83,11 +83,14 @@ SKIP_ENV_VALIDATION=true pnpm run dev
 Please read the [package.json](./package.json) file to see what kinds of scrips you can run.
 Running `pnpm run` in the terminal will also give you the available commands.
 
-## CI/CD & Git Hooks
+## CI and Git hooks
 
 This project uses [Husky](https://github.com/typicode/husky) for managing git hooks.
-This allows us to run formatters and linter fixes before pushes.
-All the Github actions are under `./github/workflows`. They can type check, lint check, formatter check, and make sure that the project will build.
+The pre-commit hook runs `lint-staged`, which formats staged files with Prettier.
+
+The [CI workflow](./.github/workflows/ci.yml) runs on pull requests and pushes to `main`.
+CI checks lint, formatting, TypeScript types, unit tests, Cypress tests, and both Docker build targets.
+Successful pushes to `main` publish application and migrator images to GHCR, tagged with the full commit SHA.
 
 ## Library Documentation
 
@@ -101,6 +104,4 @@ All the Github actions are under `./github/workflows`. They can type check, lint
 
 ## Deploying
 
-This project uses `Docker`. Here is the `t3` [guide](https://create.t3.gg/en/deployment/docker).
-
-There are more docs [here](./docs/ci-setup.md) for the ci docs and [here](./deploy/README.md) for the deploy docs on `sts.cs.wpi.edu`.
+See the [CI and GHCR setup](./.github/ci-setup.md) and [deployment instructions](./deploy/README.md) for `sts.cs.wpi.edu`.

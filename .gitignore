@@ -6,14 +6,11 @@ yarn.lock
 
 # dependencies
 /node_modules
-/.pnp
-.pnp.js
 
 # testing
 /coverage
 
 # database
-/prisma/db.sqlite
 /prisma/db.sqlite-journal
 db.sqlite
 /prisma/*.db
@@ -21,11 +18,7 @@ db.sqlite
 
 # next.js
 /.next/
-/out/
 next-env.d.ts
-
-# production
-/build
 
 # misc
 .DS_Store
@@ -43,18 +36,11 @@ yarn-error.log*
 .env*.local
 .env.docker
 
-# vercel
-.vercel
-
 # typescript
 *.tsbuildinfo
 
 # idea files
 .idea
 
-# Fumadocs generated
-.source
-
-# cypress 
+# cypress
 cypress/screenshots
-prisma/local-seed.ts
