@@ -5,6 +5,8 @@ by Mina Boktor
 > [!WARNING]
 > Please read this whole file before attempting to deploy.
 
+Before the first deployment, [make the GHCR package public](../.github/ci-setup.md) so images can be pulled without credentials.
+
 ## Steps
 
 - Make sure you have sudo access. Please ask someone with sudo privileges to run this command: `sudo usermod -aG sudo <your username>`

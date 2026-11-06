@@ -15,6 +15,8 @@ ghcr.io/sts-cs-wpi/student-solver-tool:migrator-<full-commit-sha>
 
 Publishing uses `GITHUB_TOKEN` with `packages: write`; no additional registry secret is required. If an existing package rejects publishing, grant this repository **Write** access under **Package settings → Manage Actions access**. See [GitHub's package access guide](https://docs.github.com/en/packages/learn-github-packages/configuring-a-packages-access-control-and-visibility#ensuring-workflow-access-to-your-package).
 
+GHCR packages default to private, even for public repositories. To allow anonymous pulls, after the first image publication a package administrator must open **STS-CS-WPI > Packages > student-solver-tool > Package settings** and set visibility to **Public**. This one-time setting covers both `runner-*` and `migrator-*` tags.
+
 Docker layers use GitHub Actions caching with separate `runner` and `migrator` scopes.
 
-CI prepares its database with `prisma db push`, so it does not execute committed migration SQL. The deploy script pulls both images for the current `main` commit and runs `prisma migrate deploy`. See the [deployment instructions](../deploy/README.md).
+CI prepares its database with `prisma db push`, so it does not execute committed migration SQL.
