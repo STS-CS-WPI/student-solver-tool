@@ -272,10 +272,7 @@ export const studentFormRoute = createTRPCRouter({
           }
 
           // 5. Upsert preferred sections (replace existing)
-          if (
-            sectionPreferences &&
-            Object.keys(sectionPreferences).length > 0
-          ) {
+          if (sectionPreferences !== undefined) {
             // Delete existing preferences
             await tx.staffPreferencePreferredSection.deleteMany({
               where: { staffPreferenceId: staffPref.id },
@@ -319,19 +316,21 @@ export const studentFormRoute = createTRPCRouter({
           }
 
           // 6. Upsert availability times (replace existing)
-          if (weeklyAvailability && weeklyAvailability.length > 0) {
+          if (weeklyAvailability !== undefined) {
             // Delete existing availability
             await tx.staffAvailableHour.deleteMany({
               where: { staffPreferenceId: staffPref.id },
             });
             // Create new availability
-            await tx.staffAvailableHour.createMany({
-              data: weeklyAvailability.map(({ day, hour }) => ({
-                day,
-                hour,
-                staffPreferenceId: staffPref.id,
-              })),
-            });
+            if (weeklyAvailability.length > 0) {
+              await tx.staffAvailableHour.createMany({
+                data: weeklyAvailability.map(({ day, hour }) => ({
+                  day,
+                  hour,
+                  staffPreferenceId: staffPref.id,
+                })),
+              });
+            }
           }
 
           return { ok: true, staffPreferenceId: staffPref.id };
@@ -340,6 +339,40 @@ export const studentFormRoute = createTRPCRouter({
         return result;
       },
     ),
+
+  // handles deleting an existing form
+  resetStudentForm: assistantProcedure
+    .input(baseInput)
+    .mutation(async ({ input: { userId, termId }, ctx }) => {
+      if (
+        !hasPermission(ctx.session.user, "staffPreferenceForm", "create", {
+          userId,
+          isAllowedInActiveTerm: await isUserAllowedInActiveTerm(
+            ctx.session.user.id,
+          ),
+        })
+      ) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Cannot reset this form.",
+        });
+      }
+      return ctx.db.$transaction(async (tx) => {
+        const user = await tx.user.findUnique({
+          where: { id: userId },
+          select: { canEditForm: true },
+        });
+        if (!user?.canEditForm) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Form editing is locked.",
+          });
+        }
+        // cascading relations remove qualifications, preferences and available hours
+        await tx.staffPreference.deleteMany({ where: { userId, termId } });
+        return { ok: true };
+      });
+    }),
 
   setAvailabilityForTerm: assistantProcedure
     .input(
