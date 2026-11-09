@@ -7,8 +7,9 @@ import { api } from "@/trpc/server";
 
 export default async function Home() {
   const session = await auth();
+  if (!session?.user) redirect("/login?callbackUrl=%2F");
+
   const activeTerm = await api.term.getActive();
-  if (!session) return;
 
   if (isProfessor(session?.user)) {
     if (!activeTerm) return "No active term.";
