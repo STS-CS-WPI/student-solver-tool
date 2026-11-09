@@ -168,6 +168,7 @@ export const studentDashboardRoute = createTRPCRouter({
       }
 
       const rows = await ctx.db.sectionAssignment.findMany({
+        orderBy: { section: { term: { termProfessorDueDate: "desc" } } },
         where: {
           staffId: userId,
           section: {
