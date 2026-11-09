@@ -50,9 +50,17 @@ const MultiStepFormModal: React.FC<MultiStepFormModalProps> = ({
 
   // fetch previously saved preferences for the students saved answers before showing the form
   const utils = api.useUtils();
-  const { data: savedForm, isLoading: isLoadingSavedForm } =
-    api.studentDashboard.getPreferencesFormData.useQuery({ userId, termId });
-
+  // load previously saved preferences.
+  // track errors so a failed request does not appear as a blank form
+  const {
+    data: savedForm,
+    isLoading: isLoadingSavedForm,
+    isError: isSavedFormError,
+    refetch: refetchSavedForm,
+  } = api.studentDashboard.getPreferencesFormData.useQuery({
+    userId,
+    termId,
+  });
   // state to control interface
   const [mode, setMode] = useState<"choose" | "editing">("choose");
   // confirm before deleting saved answers when creating new form
@@ -60,6 +68,7 @@ const MultiStepFormModal: React.FC<MultiStepFormModalProps> = ({
   // call to server to delete esisting form and clear local answers only on success
   const resetMutation = api.studentForm.resetStudentForm.useMutation({
     onSuccess: async () => {
+      // remove stale cached form data before displaying a blank form.
       await utils.studentDashboard.invalidate();
       setQualifiedSectionIds([]);
       setCurrentTimes([]);
@@ -133,6 +142,15 @@ const MultiStepFormModal: React.FC<MultiStepFormModalProps> = ({
     <div className="h-auto w-full overflow-y-auto rounded-2xl p-6">
       {isLoadingSavedForm ? (
         <p>Loading saved preferences...</p>
+      ) : isSavedFormError ? (
+        <div className="space-y-4">
+          <p className="text-destructive">
+            Unable to load your saved preferences. Please try again.
+          </p>
+
+          {/* retry fetching instead of opening an empty form. */}
+          <Button onClick={() => void refetchSavedForm()}>Retry</Button>
+        </div>
       ) : mode === "choose" && savedForm ? (
         <div className="mx-auto max-w-lg space-y-4">
           <h2 className="text-xl font-semibold">Existing preferences found</h2>
@@ -174,7 +192,6 @@ const MultiStepFormModal: React.FC<MultiStepFormModalProps> = ({
         <>
           {!isMobile && <ProgressIndicator step={step} totalSteps={5} />}
           {step === 1 && (
-            // doesnt need initial data, can always start form with available/not
             <FormEntryAvailability
               userId={userId}
               termId={termId}
@@ -183,7 +200,6 @@ const MultiStepFormModal: React.FC<MultiStepFormModalProps> = ({
             />
           )}
           {step === 2 && (
-            //TODO pass in initial times data
             <FormEntryTimes
               userId={userId}
               termId={termId}
@@ -206,7 +222,6 @@ const MultiStepFormModal: React.FC<MultiStepFormModalProps> = ({
             />
           )}
           {step === 4 && (
-            //TODO pass in initial prefs
             <FormEntryPreferences
               userId={userId}
               termId={termId}
@@ -219,7 +234,6 @@ const MultiStepFormModal: React.FC<MultiStepFormModalProps> = ({
             />
           )}
           {step === 5 && (
-            //TODO pass in initial comments
             <FormEntryComments
               userId={userId}
               termId={termId}

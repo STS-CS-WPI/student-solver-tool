@@ -368,8 +368,25 @@ export const studentFormRoute = createTRPCRouter({
             message: "Form editing is locked.",
           });
         }
-        // cascading relations remove qualifications, preferences and available hours
-        await tx.staffPreference.deleteMany({ where: { userId, termId } });
+        // find the existing preference form for this student and term.
+        const existingForm = await tx.staffPreference.findUnique({
+          where: {
+            userId_termId: { userId, termId },
+          },
+          select: { id: true },
+        });
+
+        if (existingForm) {
+          // delete saved availability hours before deleting the parent form.
+          await tx.staffAvailableHour.deleteMany({
+            where: { staffPreferenceId: existingForm.id },
+          });
+          // qualified and preferred sections are removed through cascading deletion.
+          await tx.staffPreference.delete({
+            where: { id: existingForm.id },
+          });
+        }
+
         return { ok: true };
       });
     }),
