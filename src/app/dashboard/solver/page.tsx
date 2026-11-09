@@ -37,6 +37,13 @@ type PendingAssign = {
 
 export default function SolverPage() {
   const { selectedId: termId } = useTerm();
+
+  if (!termId) return <NoTermsAlert />;
+
+  return <SolverPageContent key={termId} termId={termId} />;
+}
+
+function SolverPageContent({ termId }: { termId: string }) {
   const [activeStaff, setActiveStaff] = useState<StaffItemProps | null>(null);
   const [warningDialogOpen, setWarningDialogOpen] = useState(false);
   const [pendingAssign, setPendingAssign] = useState<PendingAssign>(null);
@@ -48,7 +55,6 @@ export default function SolverPage() {
     string | undefined
   >();
 
-  if (!termId) return <NoTermsAlert />;
   const [{ courses }] = api.courses.getAllCoursesForTerm.useSuspenseQuery({
     termId,
   });
