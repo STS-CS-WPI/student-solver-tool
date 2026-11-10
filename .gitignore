@@ -15,6 +15,7 @@ yarn.lock
 db.sqlite
 /prisma/*.db
 /**/dev.db
+/**/prod.db
 
 # next.js
 /.next/
