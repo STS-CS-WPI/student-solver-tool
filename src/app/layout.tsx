@@ -14,7 +14,6 @@ import {
 
 import { Separator } from "@/components/ui/separator";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
-import { HeaderBreadcrumbs } from "@/components/header-breadcrumbs";
 import { ModeToggle } from "@/components/mode-toggle";
 import { GlobalErrorBoundary } from "@/components/global-error-boundry";
 import { GlobalSuspense } from "@/components/global-suspense";
@@ -61,7 +60,6 @@ export default async function RootLayout({
                         orientation="vertical"
                         className="mr-2 data-[orientation=vertical]:h-4 data-[orientation=vertical]:self-center"
                       />
-                      <HeaderBreadcrumbs />
                       <AnyQueryFetchingSpinner />
                     </div>
                     <div className="px-2">
