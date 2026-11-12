@@ -1,10 +1,10 @@
+import Link from "next/link";
 import { auth, signOut } from "@/server/auth";
 import { SidebarMenuButton, SidebarMenuItem } from "../ui/sidebar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
@@ -42,8 +42,11 @@ export async function NavUser() {
           align="end"
           sideOffset={4}
         >
-          <DropdownMenuLabel className="p-0 font-normal">
-            <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+          <DropdownMenuItem asChild className="p-0 font-normal">
+            <Link
+              href="/profile"
+              className="flex cursor-pointer items-center gap-2 px-1 py-1.5 text-left text-sm"
+            >
               <UserIcon />
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user?.name}</span>
@@ -51,8 +54,8 @@ export async function NavUser() {
                   {user?.email}
                 </span>
               </div>
-            </div>
-          </DropdownMenuLabel>
+            </Link>
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <form action={logoutAction}>
             <DropdownMenuItem asChild>
