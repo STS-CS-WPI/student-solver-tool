@@ -21,7 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import type z from "zod";
 import type { CourseRow } from "./columns";
-import { SectionItemSchema } from "@/lib/courselisting-api";
+import type { SectionItemSchema } from "@/lib/courselisting-api";
 import { SingleSectionForm } from "@/components/dashboard/single-section-form";
 import { Confirm } from "@/components/confirm-action-wrapper";
 

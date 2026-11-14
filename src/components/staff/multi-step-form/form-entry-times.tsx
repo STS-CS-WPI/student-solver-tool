@@ -29,6 +29,7 @@ const FormEntryTimes: React.FC<FormEntryTimesProps> = ({
   const utils = api.useUtils();
   const saveFormMutation = api.studentForm.saveStudentForm.useMutation({
     onError: (error) => {
+      toast.error(error.message);
       console.error("Failed to save form:", error);
     },
     onSuccess: () => {
@@ -39,7 +40,7 @@ const FormEntryTimes: React.FC<FormEntryTimesProps> = ({
     },
   });
 
-  async function handleNextClick() {
+  function handleNextClick() {
     const weekly = selectionToWeekly(selection);
 
     saveFormMutation.mutate({
@@ -73,10 +74,7 @@ const FormEntryTimes: React.FC<FormEntryTimesProps> = ({
       </h2>
 
       <div className="border-secondary rounded-lg border p-4 shadow-sm">
-        <BaseScheduleSelector
-          selection={selection}
-          onChange={(newSelection: Date[]) => setSelection(newSelection)}
-        />
+        <BaseScheduleSelector selection={selection} onChange={setSelection} />
       </div>
 
       <div className="mt-4 flex justify-between">

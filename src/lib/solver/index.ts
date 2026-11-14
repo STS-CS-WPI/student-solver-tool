@@ -35,7 +35,7 @@ export const solverStrategyMap: Record<
     fn: greedy_v2,
   },
   backTracking: {
-    label: "BTS v1",
+    label: "Backtracking V1",
     description: "Takes only qualifications into account",
     fn: solveBackTracking_v1,
   },

@@ -4,7 +4,6 @@ import { api } from "@/trpc/react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Label } from "@/components/ui/label";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Drawer,
@@ -15,24 +14,12 @@ import {
   DrawerClose,
 } from "@/components/ui/drawer";
 import { InfoIcon } from "lucide-react";
-
-export type Section = {
-  term: string;
-  id: string;
-  courseSection: string;
-  instructor: string | null;
-};
-export type Course = {
-  code: string;
-  title: string;
-  description: string;
-  sections: Section[];
-};
+import type { StudentFormCourse } from "@/types/student-form";
 
 interface FormEntryQualificationsProps {
   userId: string;
   termId: string;
-  courses: Course[];
+  courses: StudentFormCourse[];
   prevData: string[];
   onChange: (selectedSectionIds: string[]) => void;
   onNext: () => void;
@@ -53,6 +40,7 @@ const FormEntryQualifications: React.FC<FormEntryQualificationsProps> = ({
   const utils = api.useUtils();
   const saveFormMutation = api.studentForm.saveStudentForm.useMutation({
     onError: (error) => {
+      toast.error(error.message);
       console.error("Failed to save qualifications:", error);
     },
     onSuccess: (_data, variables) => {
@@ -71,9 +59,11 @@ const FormEntryQualifications: React.FC<FormEntryQualificationsProps> = ({
     new Set(prevData),
   );
   const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(
-    () => new Set([]),
+    () => new Set(),
   );
-  const [drawerCourse, setDrawerCourse] = useState<Course | null>(null);
+  const [drawerCourse, setDrawerCourse] = useState<StudentFormCourse | null>(
+    null,
+  );
   const isMobile = useIsMobile();
 
   // derived map from course code -> section ids for quick lookup
@@ -89,14 +79,13 @@ const FormEntryQualifications: React.FC<FormEntryQualificationsProps> = ({
 
   useEffect(() => {
     onChange(Array.from(selectedSections));
-  }, [selectedSections]);
+  }, [selectedSections, onChange]);
 
-  async function handleNextClick() {
+  function handleNextClick() {
     saveFormMutation.mutate({
       userId,
       termId,
-      qualifiedSectionIds:
-        selectedSections.size === 0 ? [] : Array.from(selectedSections),
+      qualifiedSectionIds: Array.from(selectedSections),
     });
   }
 
@@ -104,13 +93,13 @@ const FormEntryQualifications: React.FC<FormEntryQualificationsProps> = ({
     return selectedSections.has(id);
   }
 
-  function isCourseSelected(course: Course) {
+  function isCourseSelected(course: StudentFormCourse) {
     const ids = courseToSectionIds.get(course.code) ?? [];
     if (ids.length === 0) return false;
     return ids.every((id) => selectedSections.has(id));
   }
 
-  function toggleCourse(course: Course) {
+  function toggleCourse(course: StudentFormCourse) {
     const ids = courseToSectionIds.get(course.code) ?? [];
     const allSelected = ids.every((id) => selectedSections.has(id));
     setSelectedSections((prev) => {
@@ -144,7 +133,7 @@ const FormEntryQualifications: React.FC<FormEntryQualificationsProps> = ({
   }
 
   function clearSelections() {
-    setSelectedSections(new Set([]));
+    setSelectedSections(new Set());
   }
 
   return (
@@ -168,7 +157,7 @@ const FormEntryQualifications: React.FC<FormEntryQualificationsProps> = ({
             <div key={course.code} className="rounded-lg border shadow-sm">
               <label
                 htmlFor={course.code}
-                className="hover:bg-input flex w-full items-center justify-between gap-3 gap-4 rounded-md p-4 text-left"
+                className="hover:bg-input flex w-full items-center justify-between gap-4 rounded-md p-4 text-left"
               >
                 <div className="flex flex-1 items-center gap-2">
                   <Button
@@ -182,24 +171,20 @@ const FormEntryQualifications: React.FC<FormEntryQualificationsProps> = ({
                     }}
                     variant="ghost"
                     size="icon"
+                    aria-label={`Course description for ${course.code}`}
                   >
-                    <InfoIcon className="size-5"></InfoIcon>
+                    <InfoIcon className="size-5" />
                   </Button>
                   <div className="text-base font-medium sm:text-lg">
                     {course.code} - {course.title}
                   </div>
                 </div>
-                <div>
-                  <Label className="inline-flex items-center gap-2">
-                    <Checkbox
-                      id={course.code}
-                      checked={courseSelected}
-                      onClick={() => toggleCourse(course)}
-                      onChange={() => toggleCourse(course)}
-                      aria-label={`Select all sections for ${course.code}`}
-                    />
-                  </Label>
-                </div>
+                <Checkbox
+                  id={course.code}
+                  checked={courseSelected}
+                  onCheckedChange={() => toggleCourse(course)}
+                  aria-label={`Select all sections for ${course.code}`}
+                />
               </label>
               {!isMobile && expandedDescriptions.has(course.code) && (
                 <div
@@ -229,8 +214,7 @@ const FormEntryQualifications: React.FC<FormEntryQualificationsProps> = ({
                         <Checkbox
                           id={section.id}
                           checked={isSectionSelected(section.id)}
-                          onClick={() => toggleSection(section.id)}
-                          onChange={() => toggleSection(section.id)}
+                          onCheckedChange={() => toggleSection(section.id)}
                           tabIndex={0}
                           aria-label={`Select section ${section.term}${section.courseSection} for ${course.code}`}
                         />
@@ -268,11 +252,13 @@ const FormEntryQualifications: React.FC<FormEntryQualificationsProps> = ({
             <DrawerTitle>
               {drawerCourse?.code} - {drawerCourse?.title}
             </DrawerTitle>
-            <DrawerDescription
-              dangerouslySetInnerHTML={{
-                __html: drawerCourse?.description ?? "",
-              }}
-            ></DrawerDescription>
+            <DrawerDescription asChild>
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: drawerCourse?.description ?? "",
+                }}
+              />
+            </DrawerDescription>
           </DrawerHeader>
           <div className="flex justify-center p-4">
             <DrawerClose asChild>

@@ -3,10 +3,7 @@ import { assistantProcedure, createTRPCRouter } from "../trpc";
 import { TRPCError } from "@trpc/server";
 import { hasPermission } from "@/lib/permissions";
 import { isUserAllowedInActiveTerm } from "@/lib/permission-helpers";
-import {
-  allowedPreferTokens,
-  allowedStrongTokens,
-} from "@/components/staff/MultiStepForm/form-entry-preferences";
+import { allowedPreferTokens, allowedStrongTokens } from "@/lib/constants";
 
 /**
  * Router: studentFormRoute
@@ -87,14 +84,10 @@ export const studentFormRoute = createTRPCRouter({
       return { sections };
     }),
 
-  getWeeklyAvailability: assistantProcedure
-    .input(baseInput)
-    .query(async ({ input }) => {
-      const { userId, termId } = input;
-
-      // TODO: query available hours
-      return { availability: [] as unknown[] };
-    }),
+  getWeeklyAvailability: assistantProcedure.input(baseInput).query(() => {
+    // TODO: query available hours
+    return { availability: [] as unknown[] };
+  }),
 
   getQualifications: assistantProcedure
     .input(baseInput)
@@ -137,21 +130,17 @@ export const studentFormRoute = createTRPCRouter({
       return { qualifiedSectionIds };
     }),
 
-  getPreferences: assistantProcedure
-    .input(baseInput)
-    .query(async ({ input: { userId, termId }, ctx }) => {
-      // TODO: query prefer/strong tokens on StaffPreference.StaffPreferencePreferredSection
+  getPreferences: assistantProcedure.input(baseInput).query(() => {
+    // TODO: query prefer/strong tokens on StaffPreference.StaffPreferencePreferredSection
 
-      return { preferences: {} as Record<string, string> };
-    }),
+    return { preferences: {} as Record<string, string> };
+  }),
 
-  getComments: assistantProcedure
-    .input(baseInput)
-    .query(async ({ input: { userId, termId }, ctx }) => {
-      // TODO: Query StaffPreference.comments
+  getComments: assistantProcedure.input(baseInput).query(() => {
+    // TODO: Query StaffPreference.comments
 
-      return { comments: null as string | null };
-    }),
+    return { comments: null as string | null };
+  }),
 
   saveStudentForm: assistantProcedure
     .input(

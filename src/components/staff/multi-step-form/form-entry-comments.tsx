@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useId, useState } from "react";
 import { api } from "@/trpc/react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,14 +23,15 @@ const FormEntryComments: React.FC<FormEntryCommentsProps> = ({
   onSubmit,
   onBack,
 }) => {
+  const commentsId = useId();
   const [comments, setComments] = useState(prevData);
   const utils = api.useUtils();
   const saveFormMutation = api.studentForm.saveStudentForm.useMutation({
     onError: (error) => {
+      toast.error(error.message);
       console.error("Failed to save comments:", error);
     },
     onSuccess: () => {
-      // onChange(comments); could save here if using local storage. otherwise no point
       toast.success("Form saved successfully");
       void utils.studentDashboard.invalidate();
       onSubmit();
@@ -54,12 +55,19 @@ const FormEntryComments: React.FC<FormEntryCommentsProps> = ({
 
   return (
     <div className="mx-auto max-w-4xl p-4">
-      <h2 className="mb-2 text-base font-semibold sm:text-lg md:text-xl">
+      <h2
+        id={`${commentsId}-label`}
+        className="mb-2 text-base font-semibold sm:text-lg md:text-xl"
+      >
         Comments
       </h2>
       <Field>
-        <FieldDescription>Max {maxChars} characters</FieldDescription>
+        <FieldDescription id={`${commentsId}-description`}>
+          Max {maxChars} characters
+        </FieldDescription>
         <Textarea
+          aria-labelledby={`${commentsId}-label`}
+          aria-describedby={`${commentsId}-description`}
           value={comments}
           onChange={(e) => setComments(e.target.value)}
           placeholder="Please leave any additional comments here..."

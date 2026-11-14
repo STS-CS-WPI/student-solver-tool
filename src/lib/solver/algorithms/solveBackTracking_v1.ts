@@ -107,7 +107,6 @@ export function solveBackTracking_v1({
     i: number,
   ): [string[], number] | null {
     let bestSolution: [string[], number] | null = null;
-    let bestDistance = Infinity;
 
     let j = i + 1;
     const maxIterations = 10000; // safety limit to prevent infinite loops
@@ -129,7 +128,6 @@ export function solveBackTracking_v1({
 
         const distance = validation.hours - section.requiredHours;
         if (distance > 0) {
-          bestDistance = distance;
           bestSolution = [sol, j];
         }
 
@@ -147,7 +145,7 @@ export function solveBackTracking_v1({
 
   // returns true if staff already assigned elsewhere
   function isStaffAlreadyAssigned(userId: string): boolean {
-    for (const [_, staffIds] of solution) {
+    for (const staffIds of solution.values()) {
       if (staffIds.includes(userId)) {
         return true;
       }
