@@ -6,7 +6,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "../ui/collapsible";
-import type { SectionAccordionProps } from "./section-accordion.tsx";
+import type { SectionAccordionProps } from "./section-accordion";
 import {
   Table,
   TableBody,
@@ -22,8 +22,7 @@ import {
   stylesByStatus,
   BaseScheduleSelector,
 } from "@/lib/schedule-selector";
-import { dedupe, slotToKey } from "@/lib/schedule-coverage";
-import { calculateCoverage } from "@/lib/schedule-coverage";
+import { calculateCoverage, dedupe, slotToKey } from "@/lib/schedule-coverage";
 import { cn } from "@/lib/utils";
 
 type SectionInfoCardProps = {
@@ -33,8 +32,8 @@ type SectionInfoCardProps = {
 export function SectionInfoCard({ section }: SectionInfoCardProps) {
   const { professor, staff } = section;
 
-  const needed = professor.timesRequired ?? [];
-  const assigned = staff.flatMap((s) => s.timesAvailable) ?? [];
+  const needed = professor.timesRequired;
+  const assigned = staff.flatMap((s) => s.timesAvailable);
 
   const neededKeys = new Set(needed.map(slotToKey));
   const assignedKeys = new Set(assigned.map(slotToKey));
@@ -125,7 +124,7 @@ export function SectionInfoCard({ section }: SectionInfoCardProps) {
               <section>
                 <div className="text-muted-foreground">
                   Coverage: <strong>{percent}%</strong> ({totalCovered}/
-                  {totalNeeded}hrs)
+                  {totalNeeded} hrs)
                 </div>
                 <div className="text-muted-foreground">
                   Meeting pattern: {section.meetingPattern}
@@ -155,7 +154,8 @@ export function SectionInfoCard({ section }: SectionInfoCardProps) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {!professor?.preferredStaff && !professor?.avoidedStaff ? (
+                  {!professor?.preferredStaff?.length &&
+                  !professor?.avoidedStaff?.length ? (
                     <TableRow>
                       <TableCell
                         colSpan={3}

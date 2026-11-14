@@ -1,14 +1,14 @@
 import type { RouterInputs } from "@/trpc/react";
-import type { SectionAccordionProps } from "./section-accordion.tsx";
+import type { SectionAccordionProps } from "./section-accordion";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Droppable } from "../droppable";
 import { Toggle } from "../ui/toggle";
-import { CircleAlertIcon, LockIcon, UnlockIcon, XIcon } from "lucide-react";
+import { LockIcon, UnlockIcon, XIcon } from "lucide-react";
 import { Draggable } from "../draggable";
 import { StaffItem } from "./staff-item";
 import { Button } from "../ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { getSectionPreference } from "./staff-selection-sidebar";
+import { StaffWarnings } from "./staff-warnings";
 
 export function AssignedAssistantsCard({
   section,
@@ -21,6 +21,8 @@ export function AssignedAssistantsCard({
   ) => void;
   onUnassign: (input: RouterInputs["assignment"]["remove"]) => void;
 }) {
+  const sectionCode = `${section.courseCode}-${section.courseSection}`;
+
   return (
     <Card className="flex-5">
       <CardHeader>
@@ -32,7 +34,7 @@ export function AssignedAssistantsCard({
           className="h-full"
           data={{
             action: "assign",
-            code: section.courseCode + "-" + section.courseSection,
+            code: sectionCode,
           }}
         >
           <ul className="space-y-2">
@@ -43,8 +45,8 @@ export function AssignedAssistantsCard({
               >
                 <Toggle
                   variant="outline"
-                  aria-label="Toggle lock"
-                  title={`Lock/unlock ${staff.name} to ${section.courseCode}`}
+                  aria-label={`Lock assignment for ${staff.name} to ${sectionCode}`}
+                  title={`Lock/unlock ${staff.name} to ${sectionCode}`}
                   pressed={staff.locked}
                   onPressedChange={() =>
                     onToggleAssignmentLock({
@@ -60,38 +62,14 @@ export function AssignedAssistantsCard({
                     {...staff}
                     rank={getSectionPreference(staff, section.id)}
                   >
-                    {!staff.flags.notAvoidedByProfessor && (
-                      <Tooltip>
-                        <TooltipTrigger className="self-center">
-                          <CircleAlertIcon className="text-destructive size-6" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>
-                            Staff is an anti-preference of the professor
-                            teaching this section.
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    )}
-                    {!staff.flags.qualifiedForThisSection && (
-                      <Tooltip>
-                        <TooltipTrigger className="self-center">
-                          <CircleAlertIcon className="text-destructive size-6" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>
-                            Staff has reported that they are unqualified for
-                            this section.
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    )}
+                    <StaffWarnings flags={staff.flags} />
                   </StaffItem>
                 </Draggable>
                 <Button
                   size="icon"
                   variant="destructive"
-                  title={`Unassign ${staff.name} from ${section.courseCode}`}
+                  aria-label={`Unassign ${staff.name} from ${sectionCode}`}
+                  title={`Unassign ${staff.name} from ${sectionCode}`}
                   onClick={() =>
                     onUnassign({
                       sectionId: section.id,

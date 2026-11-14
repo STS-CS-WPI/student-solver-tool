@@ -73,7 +73,11 @@ function ValidatorDisplayItem({
           <>
             <ItemActions>
               <CollapsibleTrigger asChild>
-                <Button variant="ghost" className="group w-full">
+                <Button
+                  variant="ghost"
+                  className="group w-full"
+                  aria-label="Toggle details"
+                >
                   <ChevronDownIcon className="ml-auto group-data-[state=open]:rotate-180" />
                 </Button>
               </CollapsibleTrigger>
@@ -106,7 +110,7 @@ function AssignmentTable({
         </TableHeader>
         <TableBody>
           {assignments.map(({ user, assignment }) => (
-            <TableRow key={user.userId}>
+            <TableRow key={`${user.userId}:${assignment.sectionId}`}>
               <TableCell className="font-medium">{user.name}</TableCell>
               <TableCell>
                 {assignment.courseCode}-{assignment.courseSection}
@@ -138,8 +142,8 @@ function ValidatorCourseSchedulingNeedsMet({ termId }: ValidatorDisplayProps) {
   return (
     <ValidatorDisplayItem
       status={short.length === 0 ? "OK" : "WARNING"}
-      title="Course scheduling needs met"
-      description={`Total coverage percent: ${totals.percent}%`}
+      title="Course schedule coverage"
+      description={`Total schedule coverage: ${totals.percent}%`}
     >
       <div className="w-full rounded-md border">
         <Table>
@@ -158,7 +162,7 @@ function ValidatorCourseSchedulingNeedsMet({ termId }: ValidatorDisplayProps) {
                   {section.courseCode}-{section.courseSection}
                 </TableCell>
                 <TableCell className="text-right">
-                  {section.totalCovered}h/{section.totalNeeded}h
+                  {section.totalCovered}/{section.totalNeeded} hrs
                 </TableCell>
                 <TableCell className="text-right">{section.percent}%</TableCell>
                 <TableCell className="text-right">
@@ -168,7 +172,7 @@ function ValidatorCourseSchedulingNeedsMet({ termId }: ValidatorDisplayProps) {
             ))}
             {short.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="h-12 text-center">
+                <TableCell colSpan={4} className="h-12 text-center">
                   No results.
                 </TableCell>
               </TableRow>
@@ -188,8 +192,8 @@ function ValidatorCourseHelpHoursNeedsMet({ termId }: ValidatorDisplayProps) {
 
   return (
     <ValidatorDisplayItem
-      status={short.length === 0 || over.length === 0 ? "OK" : "WARNING"}
-      title="Course help hours needs met"
+      status={short.length === 0 && over.length === 0 ? "OK" : "WARNING"}
+      title="Course staffing hours"
       description={`Total assigned hours / total needed hours: ${totalAssignedHours}/${totalNeededHours}`}
     >
       <div className="w-full rounded-md border">
@@ -210,14 +214,16 @@ function ValidatorCourseHelpHoursNeedsMet({ termId }: ValidatorDisplayProps) {
                   {section.courseCode}-{section.courseSection}
                 </TableCell>
                 <TableCell className="text-right">
-                  {section.neededHours}h
+                  {section.neededHours} hrs
                 </TableCell>
                 <TableCell className="text-right">
-                  {section.assignedHours}h
+                  {section.assignedHours} hrs
                 </TableCell>
-                <TableCell className="text-right">{section.delta}h</TableCell>
                 <TableCell className="text-right">
-                  <Badge variant="warning">{section.status}</Badge>
+                  {section.delta} hrs
+                </TableCell>
+                <TableCell className="text-right">
+                  <Badge variant="warning">{humanizeKey(section.status)}</Badge>
                 </TableCell>
               </TableRow>
             ))}
@@ -260,7 +266,7 @@ function ValidatorIllegalAssignment({ termId }: ValidatorDisplayProps) {
       </ValidatorDisplayItem>
       <ValidatorDisplayItem
         status={professorAvoidedStaff.length === 0 ? "OK" : "ERROR"}
-        title="Assignments where assistnat is an anti-preference of the teaching professor"
+        title="Assignments where assistant is an anti-preference of the teaching professor"
         description={`Count: ${professorAvoidedStaff.length}`}
       >
         <AssignmentTable assignments={professorAvoidedStaff} />
@@ -295,7 +301,7 @@ function ValidatorStaffGotPreferences({ termId }: ValidatorDisplayProps) {
     <>
       <ValidatorDisplayItem
         status={unassigned.length === 0 ? "OK" : "WARNING"}
-        title="Unassigned Staff"
+        title="Unassigned staff"
         description={`Count: ${unassigned.length}`}
       >
         <AssignmentTable
@@ -315,7 +321,7 @@ function ValidatorStaffGotPreferences({ termId }: ValidatorDisplayProps) {
         status={
           assignedButNoPreferencesSubmitted.length === 0 ? "OK" : "WARNING"
         }
-        title="Assigned staff w/o preferences"
+        title="Assigned staff without submitted preferences"
         description={`Count: ${assignedButNoPreferencesSubmitted.length}`}
       >
         <AssignmentTable assignments={assignedButNoPreferencesSubmitted} />
@@ -353,7 +359,7 @@ function ValidatorStaffGotPreferences({ termId }: ValidatorDisplayProps) {
             </TableHeader>
             <TableBody>
               {gotPreference.map(({ user, assignment, level }) => (
-                <TableRow key={user.userId}>
+                <TableRow key={`${user.userId}:${assignment.sectionId}`}>
                   <TableCell className="font-medium">{user.name}</TableCell>
                   <TableCell>
                     {assignment.courseCode}-{assignment.courseSection}
@@ -367,6 +373,13 @@ function ValidatorStaffGotPreferences({ termId }: ValidatorDisplayProps) {
                   </TableCell>
                 </TableRow>
               ))}
+              {gotPreference.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={5} className="h-12 text-center">
+                    No results.
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </div>

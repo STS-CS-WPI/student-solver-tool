@@ -14,9 +14,9 @@ import { SelectItem } from "@/components/ui/select";
 import { SectionItemSchema, type SectionItem } from "@/lib/courselisting-api";
 import type { User } from "next-auth";
 import type z from "zod";
-import { useEffect } from "react";
+import { humanizeKey } from "@/lib/utils";
 
-export type CreateSectionFormProps = {
+export type SingleSectionFormProps = {
   onSubmit: (data: SectionItem) => void;
   professors: Array<Pick<User, "id" | "name">>;
   defaultValues?: z.infer<typeof SectionItemSchema>;
@@ -38,14 +38,12 @@ export function SingleSectionForm({
     requiredHours: 0,
     academicLevel: "UNDERGRADUATE" as const,
   },
-}: CreateSectionFormProps) {
+}: SingleSectionFormProps) {
   const form = useForm({
     resolver: zodResolver(SectionItemSchema),
     mode: "onChange",
     defaultValues,
   });
-
-  console.log({ defaultValues });
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="my-2">
@@ -95,11 +93,11 @@ export function SingleSectionForm({
           <FormSelect
             control={form.control}
             name="academicLevel"
-            label="AcademicLevel"
+            label="Academic level"
           >
-            {Object.values(AcademicLevel).map((letter) => (
-              <SelectItem key={letter} value={letter}>
-                {letter}
+            {Object.values(AcademicLevel).map((level) => (
+              <SelectItem key={level} value={level}>
+                {humanizeKey(level)}
               </SelectItem>
             ))}
           </FormSelect>
@@ -115,7 +113,7 @@ export function SingleSectionForm({
             control={form.control}
             name="description"
             label="Description"
-            description="An HTML string"
+            description="HTML formatting is supported."
           />
         </FieldGroup>
         <Button type="submit" disabled={!form.formState.isValid}>

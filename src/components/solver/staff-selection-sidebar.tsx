@@ -7,12 +7,7 @@ import { StaffItem } from "./staff-item";
 import { api, type RouterOutputs } from "@/trpc/react";
 import { Draggable } from "../draggable";
 import { Droppable } from "../droppable";
-import {
-  CircleAlertIcon,
-  FunnelIcon,
-  TriangleAlertIcon,
-  XIcon,
-} from "lucide-react";
+import { FunnelIcon, TriangleAlertIcon, XIcon } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -29,6 +24,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "../ui/scroll-area";
+import { StaffWarnings } from "./staff-warnings";
 
 export const STAFF_SIDEBAR_ID = "StaffSelectionSidebar" as const;
 
@@ -70,7 +66,7 @@ export function StaffSelectionSidebar({
   };
 
   const filteredStaff = useMemo(() => {
-    let result = staff;
+    let result = [...staff];
 
     for (const key of filters) {
       result = result.filter((s) => s.flags?.[key]);
@@ -125,7 +121,7 @@ export function StaffSelectionSidebar({
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon">
+            <Button variant="outline" size="icon" aria-label="Filter staff">
               <FunnelIcon className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -171,7 +167,10 @@ export function StaffSelectionSidebar({
                     <div className="flex flex-row space-x-2">
                       {!s.flags.availableThisTerm && (
                         <Tooltip>
-                          <TooltipTrigger className="self-center">
+                          <TooltipTrigger
+                            className="self-center"
+                            aria-label="Already assigned"
+                          >
                             <TriangleAlertIcon className="text-warning size-6" />
                           </TooltipTrigger>
                           <TooltipContent>
@@ -181,32 +180,7 @@ export function StaffSelectionSidebar({
                           </TooltipContent>
                         </Tooltip>
                       )}
-                      {!s.flags.notAvoidedByProfessor && (
-                        <Tooltip>
-                          <TooltipTrigger className="self-center">
-                            <CircleAlertIcon className="text-destructive size-6" />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>
-                              Staff is an anti-preference of the professor
-                              teaching this section.
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      )}
-                      {!s.flags.qualifiedForThisSection && (
-                        <Tooltip>
-                          <TooltipTrigger className="self-center">
-                            <CircleAlertIcon className="text-destructive size-6" />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>
-                              Staff has reported that they are unqualified for
-                              this section.
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      )}
+                      <StaffWarnings flags={s.flags} />
                     </div>
                   </StaffItem>
                 </Draggable>

@@ -9,7 +9,7 @@ import { RoleBadges } from "@/components/role-badge";
 import { Button } from "../ui/button";
 import type { RouterOutputs } from "@/trpc/react";
 import { BaseScheduleSelector, slotToDate } from "@/lib/schedule-selector";
-import { humanizeKey } from "@/lib/utils";
+import { getPreferenceScore, humanizeKey } from "@/lib/utils";
 import type { PreferenceLevel } from "@prisma/client";
 export type StaffItemProps =
   RouterOutputs["staff"]["getStaffForSection"]["staff"][0] & {
@@ -18,7 +18,6 @@ export type StaffItemProps =
   };
 
 export function StaffItem({
-  id,
   name,
   email,
   hours,
@@ -41,7 +40,7 @@ export function StaffItem({
               className="text-muted-foreground size-6 cursor-grab hover:bg-transparent"
             >
               <GripVertical className="size-4" />
-              <span className="sr-only">Drag to reorder</span>
+              <span className="sr-only">Drag to assign</span>
             </Button>
             <div className="p-0">
               <div className="flex gap-2 font-semibold">
@@ -80,12 +79,10 @@ export function StaffItem({
               <p className="font-medium">Preferred Sections:</p>
               <ol className="mx-4 list-disc">
                 {[...preferredSections] // copy it since sorting sorts in place
-                  .sort((a, b) => {
-                    if (a.rank === b.rank) return 0;
-                    if (a.rank === "STRONGLY_PREFER") return -1;
-                    else if (a.rank === "PREFER") return 1;
-                    else return 0; // should never happen
-                  })
+                  .sort(
+                    (a, b) =>
+                      getPreferenceScore(b.rank) - getPreferenceScore(a.rank),
+                  )
                   .map((s) => (
                     <li key={s.section.id}>
                       {s.section.courseCode}-{s.section.courseSection}{" "}

@@ -37,7 +37,7 @@ export function SectionAccordion({
         type="single"
         collapsible
         className="h-full w-full"
-        value={selected}
+        value={selected ?? ""}
         onValueChange={onSelectedChange}
       >
         {classes.map((section) => (

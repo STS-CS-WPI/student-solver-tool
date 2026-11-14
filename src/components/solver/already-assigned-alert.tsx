@@ -19,9 +19,9 @@ export type AlreadyAssignedAlertProps = {
   onOpenChange: (val: boolean) => void;
   onCancel: () => void;
   onConfirm: () => void;
-  onDontShowAgain: () => void;
+  onDontShowAgainChange: (checked: boolean) => void;
 };
-export function AleadyAssignedAlert({
+export function AlreadyAssignedAlert({
   toCourse,
   fromCourse,
   staffName,
@@ -29,7 +29,7 @@ export function AleadyAssignedAlert({
   onOpenChange,
   onConfirm,
   onCancel,
-  onDontShowAgain,
+  onDontShowAgainChange,
 }: AlreadyAssignedAlertProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -37,13 +37,17 @@ export function AleadyAssignedAlert({
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            This staff is already assigned to course {fromCourse}. Pressing
-            Continue will remove {staffName} from {fromCourse} and assign them
-            to {toCourse}.
+            {staffName} is already assigned to {fromCourse}. Continuing will
+            remove them from {fromCourse} and assign them to {toCourse}.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="flex items-center gap-3">
-          <Checkbox id="showagain" onClick={onDontShowAgain} />
+          <Checkbox
+            id="showagain"
+            onCheckedChange={(checked) =>
+              onDontShowAgainChange(checked === true)
+            }
+          />
           <Label htmlFor="showagain">Don&apos;t show this warning again</Label>
         </div>
         <AlertDialogFooter>

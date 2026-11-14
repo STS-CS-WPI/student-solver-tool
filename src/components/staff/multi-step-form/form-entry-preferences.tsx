@@ -25,29 +25,15 @@ import {
   DrawerClose,
 } from "@/components/ui/drawer";
 import { InfoIcon } from "lucide-react";
+import type { StudentFormCourse } from "@/types/student-form";
+import { allowedPreferTokens, allowedStrongTokens } from "@/lib/constants";
 
 type TokenType = "prefer" | "strong";
-
-export type Section = {
-  term: string;
-  id: string;
-  courseSection: string;
-  instructor: string | null;
-};
-export type Course = {
-  code: string;
-  title: string;
-  description: string;
-  sections: Section[];
-};
-
-export const allowedStrongTokens = 2;
-export const allowedPreferTokens = 5;
 
 interface CoursePreferencesProps {
   userId: string;
   termId: string;
-  courses?: Course[];
+  courses?: StudentFormCourse[];
   selectedSectionIds: string[];
   prevData: Record<string, TokenType | undefined>;
   onChange: (selectedPrefs: Record<string, TokenType | undefined>) => void;
@@ -68,6 +54,7 @@ const FormEntryPreferences: React.FC<CoursePreferencesProps> = ({
   const utils = api.useUtils();
   const saveFormMutation = api.studentForm.saveStudentForm.useMutation({
     onError: (error) => {
+      toast.error(error.message);
       console.error("Failed to save preferences:", error);
     },
     onSuccess: () => {
@@ -97,9 +84,11 @@ const FormEntryPreferences: React.FC<CoursePreferencesProps> = ({
   // drag/drop handlers
   const [activeToken, setActiveToken] = useState<TokenType | null>(null);
   const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(
-    () => new Set([]),
+    () => new Set(),
   );
-  const [drawerCourse, setDrawerCourse] = useState<Course | null>(null);
+  const [drawerCourse, setDrawerCourse] = useState<StudentFormCourse | null>(
+    null,
+  );
   const isMobile = useIsMobile();
 
   const touchSensor = useSensor(TouchSensor);
@@ -110,7 +99,6 @@ const FormEntryPreferences: React.FC<CoursePreferencesProps> = ({
     const { active } = event;
     const tokenType = active.id as TokenType;
     setActiveToken(tokenType);
-    console.log(activeToken);
   }
 
   function handleDragEnd(event: DragEndEvent) {
@@ -150,9 +138,6 @@ const FormEntryPreferences: React.FC<CoursePreferencesProps> = ({
     onChange(mapping);
     onBack();
   }
-
-  const originalNumStrongTokens = allowedStrongTokens;
-  const originalNumPreferTokens = allowedPreferTokens;
 
   const usedStrong = Object.values(mapping).filter(
     (v) => v === "strong",
@@ -266,8 +251,9 @@ const FormEntryPreferences: React.FC<CoursePreferencesProps> = ({
                     }}
                     variant="ghost"
                     size="icon"
+                    aria-label={`Course description for ${course.code}`}
                   >
-                    <InfoIcon className="size-5"></InfoIcon>
+                    <InfoIcon className="size-5" />
                   </Button>
                   <div>
                     {course.code} - {course.title}
@@ -284,8 +270,11 @@ const FormEntryPreferences: React.FC<CoursePreferencesProps> = ({
               <div className="border-t p-3">
                 <ul className="space-y-2">
                   {course.sections.map((section) => (
-                    <Droppable id={section.id} key={section.id}>
-                      <li className="flex items-center justify-between rounded-md p-2">
+                    <li key={section.id}>
+                      <Droppable
+                        id={section.id}
+                        className="flex items-center justify-between rounded-md p-2"
+                      >
                         <div>
                           <div className="font-medium">
                             {section.term}
@@ -296,6 +285,7 @@ const FormEntryPreferences: React.FC<CoursePreferencesProps> = ({
                         <div className="flex gap-2">
                           {mapping[section.id] ? (
                             <button
+                              type="button"
                               onClick={() => handleRemoveToken(section.id)}
                               className={`inline-flex cursor-pointer items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${
                                 mapping[section.id] === "strong"
@@ -303,7 +293,7 @@ const FormEntryPreferences: React.FC<CoursePreferencesProps> = ({
                                   : "bg-blue-200 text-blue-800"
                               }`}
                               title="Remove preference"
-                              aria-label={`Remove preference for {${section.term}${section.courseSection}}`}
+                              aria-label={`Remove preference for ${section.term}${section.courseSection}`}
                             >
                               <span>
                                 {mapping[section.id] === "strong"
@@ -317,13 +307,13 @@ const FormEntryPreferences: React.FC<CoursePreferencesProps> = ({
                               </span>
                             </button>
                           ) : (
-                            <span className="text-sm text-gray-400">
+                            <span className="text-muted-foreground text-sm">
                               Drop preference here
                             </span>
                           )}
                         </div>
-                      </li>
-                    </Droppable>
+                      </Droppable>
+                    </li>
                   ))}
                 </ul>
               </div>
@@ -372,11 +362,13 @@ const FormEntryPreferences: React.FC<CoursePreferencesProps> = ({
             <DrawerTitle>
               {drawerCourse?.code} - {drawerCourse?.title}
             </DrawerTitle>
-            <DrawerDescription
-              dangerouslySetInnerHTML={{
-                __html: drawerCourse?.description ?? "",
-              }}
-            ></DrawerDescription>
+            <DrawerDescription asChild>
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: drawerCourse?.description ?? "",
+                }}
+              />
+            </DrawerDescription>
           </DrawerHeader>
           <div className="flex justify-center p-4">
             <DrawerClose asChild>

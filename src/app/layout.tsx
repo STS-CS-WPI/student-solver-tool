@@ -16,7 +16,7 @@ import { Separator } from "@/components/ui/separator";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { HeaderBreadcrumbs } from "@/components/header-breadcrumbs";
 import { ModeToggle } from "@/components/mode-toggle";
-import { GlobalErrorBoundary } from "@/components/global-error-boundry";
+import { GlobalErrorBoundary } from "@/components/global-error-boundary";
 import { GlobalSuspense } from "@/components/global-suspense";
 import { AnyQueryFetchingSpinner } from "@/components/header-spinner";
 import { Toaster } from "@/components/ui/sonner";

@@ -34,7 +34,7 @@ export function SectionSolverHourCoverage({
                 : "destructive"
           }
         >
-          {hoursAssigned}/{hoursRequired}hrs <ClockIcon />
+          {hoursAssigned}/{hoursRequired} hrs <ClockIcon />
         </Badge>
       </TooltipTrigger>
       <TooltipContent>

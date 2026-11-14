@@ -53,7 +53,7 @@ export function SolverPageHeader({ termId }: SolverPageHeaderProps) {
     ]);
   };
 
-  const unAssignAllUnlockedApi =
+  const unassignAllUnlockedApi =
     api.assignment.removeAllUnlockedAssignments.useMutation({
       onSuccess: () => {
         toast.success("Successfully unassigned all unlocked staff!");
@@ -66,7 +66,7 @@ export function SolverPageHeader({ termId }: SolverPageHeaderProps) {
 
   const solverApi = api.assignment.solve.useMutation({ onSettled });
 
-  async function handleSolve() {
+  function handleSolve() {
     toast.promise(solverApi.mutateAsync({ termId, solverStrategy }), {
       loading: "Solving assignments...",
       success: "Successfully solved!",
@@ -79,7 +79,7 @@ export function SolverPageHeader({ termId }: SolverPageHeaderProps) {
       <h1 className="pr-2 font-bold">Term: </h1> <TermCombobox />
       <ButtonGroup className="ml-auto">
         <ButtonGroup>
-          <Confirm action={() => unAssignAllUnlockedApi.mutate({ termId })}>
+          <Confirm action={() => unassignAllUnlockedApi.mutate({ termId })}>
             <Button
               size="sm"
               variant="destructive"
@@ -100,13 +100,13 @@ export function SolverPageHeader({ termId }: SolverPageHeaderProps) {
           <ButtonGroupSeparator />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button size="sm">
+              <Button size="sm" aria-label="Choose solver algorithm">
                 <ChevronDownIcon />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-44">
               <DropdownMenuGroup>
-                <DropdownMenuLabel>Panel Position</DropdownMenuLabel>
+                <DropdownMenuLabel>Solver algorithm</DropdownMenuLabel>
                 <DropdownMenuRadioGroup
                   value={solverStrategy}
                   onValueChange={(value) =>
@@ -117,7 +117,10 @@ export function SolverPageHeader({ termId }: SolverPageHeaderProps) {
                     <DropdownMenuRadioItem key={key} value={key}>
                       {val.label}
                       <Tooltip>
-                        <TooltipTrigger className="ml-auto">
+                        <TooltipTrigger
+                          className="ml-auto"
+                          aria-label={`About ${val.label}`}
+                        >
                           <InfoIcon />
                         </TooltipTrigger>
                         <TooltipContent>{val.description}</TooltipContent>
