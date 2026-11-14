@@ -31,18 +31,22 @@ You might need to sign out and sign back in to the server.
 
 The deploy script is in `./deploy`. Run `./deploy/deploy.sh -h` to see options.
 
-- Run `./deploy/deploy.sh` to deploy the current `main` commit using its application and migrator images from GitHub Container Registry.
+- Run `./deploy/deploy.sh` to deploy the latest `origin/main` commit using its runner and migrator images from GitHub Container Registry.
+  Select a release tag or full commit SHA with `./deploy/deploy.sh --ref <release-tag>` or `./deploy/deploy.sh --ref <full-commit-sha>`.
+  The script checks out the selected commit and pulls its SHA-tagged images.
   If either image is unavailable, deployment stops before backup or migrations. Wait for both Docker jobs to pass and rerun.
   There will be a backup of the sqlite db made in /home/backups automatically.
   `/home/backups/` is a special directory that is backed up twice a day, and backups are kept for 60 days.
   If you wish to skip this step and not back up the database before deployment, you can run the deploy script with the `--no-backup` flag.
+
+Database migrations remain applied when deploying an older release.
 
 The deploy script runs off of git. If you get a message along the lines of 'fatal: detected dubious ownership in repository at /opt/sts',
 run the following command: `git config --global --add safe.directory /opt/sts`
 
 ## Helpful commands
 
-- To deploy with Compose directly, select a full commit SHA whose Docker jobs have passed, then pull its images before applying migrations and starting the app. Application settings still come from `.env`.
+- To deploy with Compose directly, check out the selected commit and set `STS_IMAGE_TAG` to its full SHA. These commands do not back up the database.
 
 ```bash
 export STS_IMAGE_TAG=<full-commit-sha>
