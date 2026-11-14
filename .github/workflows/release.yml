@@ -1,0 +1,62 @@
+name: Release images
+
+on:
+  release:
+    types: [published]
+
+concurrency:
+  group: release-images-${{ github.event.release.tag_name }}
+  cancel-in-progress: false
+
+jobs:
+  tag-images:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      packages: write
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Tag existing CI images
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          image="ghcr.io/${GITHUB_REPOSITORY,,}"
+          sha="$GITHUB_SHA"
+          declare -A digests
+
+          digest() {
+            docker buildx imagetools inspect "$1" --format '{{json .Manifest}}' | jq -er '.digest'
+          }
+
+          # Check both images and existing release tags before publishing either tag.
+          for target in runner migrator; do
+            if ! digests[$target]="$(digest "$image:$target-$sha")"; then
+              echo "::error::Missing $target image for $sha. Wait for both CI Docker jobs to succeed, then rerun this workflow."
+              exit 1
+            fi
+            destination="$image:$target-$RELEASE_TAG"
+            if existing="$(digest "$destination" 2> "$RUNNER_TEMP/image-error")"; then
+              if [[ "$existing" != "${digests[$target]}" ]]; then
+                echo "::error::$destination already points to a different image. Use a new release version."
+                exit 1
+              fi
+            elif ! grep -Eqi 'not found|manifest unknown|MANIFEST_UNKNOWN' "$RUNNER_TEMP/image-error"; then
+              cat "$RUNNER_TEMP/image-error" >&2
+              exit 1
+            fi
+          done
+
+          for target in runner migrator; do
+            docker buildx imagetools create --prefer-index=false \
+              --tag "$image:$target-$RELEASE_TAG" "$image@${digests[$target]}"
+          done
