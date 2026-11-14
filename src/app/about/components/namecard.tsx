@@ -1,8 +1,8 @@
-import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowRightIcon, BellIcon, SparklesIcon } from "lucide-react";
+import { ArrowRightIcon, SparklesIcon } from "lucide-react";
 
 interface NameCardProps {
   name: string;
@@ -13,7 +13,7 @@ export function NameCard({ name }: NameCardProps) {
     <Card className="w-full max-w-xs">
       <CardContent className="flex flex-col gap-4">
         <div className="relative h-48 w-full overflow-hidden rounded-lg">
-          <img
+          <Image
             src="https://www.gamerevolution.com/wp-content/uploads/sites/2/2019/08/original-Pokemon-artwork-2.jpg"
             alt="16:9"
             width={1000}
@@ -33,8 +33,8 @@ export function NameCard({ name }: NameCardProps) {
         </div>
 
         <p className="text-foreground text-sm">
-          A little description of who you are, what you're interested in, what
-          you did in this project
+          A little description of who you are, what you&apos;re interested in,
+          what you did in this project
         </p>
 
         <Button>
