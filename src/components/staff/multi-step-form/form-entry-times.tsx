@@ -29,7 +29,9 @@ const FormEntryTimes: React.FC<FormEntryTimesProps> = ({
   const utils = api.useUtils();
   const saveFormMutation = api.studentForm.saveStudentForm.useMutation({
     onError: (error) => {
-      toast.error(error.message);
+      toast.error("Failed to save available times", {
+        description: error.message,
+      });
       console.error("Failed to save form:", error);
     },
     onSuccess: () => {

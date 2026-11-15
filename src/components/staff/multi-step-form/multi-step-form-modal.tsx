@@ -79,7 +79,10 @@ const MultiStepFormModal: React.FC<MultiStepFormModalProps> = ({
       setMode("editing");
       toast.success("Previous preferences deleted");
     },
-    onError: (error) => toast.error(error.message),
+    onError: (error) =>
+      toast.error("Failed to reset preferences", {
+        description: error.message,
+      }),
   });
 
   // restore persisted answers into formats expected for each step in form

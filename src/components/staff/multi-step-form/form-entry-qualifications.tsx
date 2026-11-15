@@ -40,7 +40,9 @@ const FormEntryQualifications: React.FC<FormEntryQualificationsProps> = ({
   const utils = api.useUtils();
   const saveFormMutation = api.studentForm.saveStudentForm.useMutation({
     onError: (error) => {
-      toast.error(error.message);
+      toast.error("Failed to save qualifications", {
+        description: error.message,
+      });
       console.error("Failed to save qualifications:", error);
     },
     onSuccess: (_data, variables) => {

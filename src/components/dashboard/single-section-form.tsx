@@ -52,19 +52,19 @@ export function SingleSectionForm({
           <FormInput
             control={form.control}
             name="courseTitle"
-            label="Course Title"
+            label="Course title"
             description='Ex: "Discrete Mathematics"'
           />
           <FormInput
             control={form.control}
             name="courseCode"
-            label="Course Code"
+            label="Course code"
             description='Ex: "CS 2022"'
           />
           <FormInput
             control={form.control}
             name="courseSection"
-            label="Course Section"
+            label="Course section"
             description='Ex: "LO1"'
           />
           <FormCombobox
@@ -106,7 +106,7 @@ export function SingleSectionForm({
           <FormInput
             control={form.control}
             name="meetingPattern"
-            label="Meeting Pattern"
+            label="Meeting pattern"
             description='Ex: "M-R | 2:00pm - 3:50pm"'
           />
           <FormTextarea

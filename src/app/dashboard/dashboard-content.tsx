@@ -161,7 +161,7 @@ export default function DashboardContent() {
               <div className="mb-2 flex items-center justify-between">
                 <Clock className="text-primary h-8 w-8" />
                 <span className="text-foreground text-2xl font-bold">
-                  {staff.totalAvailableHours}h
+                  {staff.totalAvailableHours} hrs
                 </span>
               </div>
               <p className="text-muted-foreground text-sm font-medium">

@@ -28,7 +28,9 @@ const FormEntryComments: React.FC<FormEntryCommentsProps> = ({
   const utils = api.useUtils();
   const saveFormMutation = api.studentForm.saveStudentForm.useMutation({
     onError: (error) => {
-      toast.error(error.message);
+      toast.error("Failed to save comments", {
+        description: error.message,
+      });
       console.error("Failed to save comments:", error);
     },
     onSuccess: () => {
