@@ -267,14 +267,13 @@ export const studentFormRoute = createTRPCRouter({
               where: { staffPreferenceId: staffPref.id },
             });
 
-            // Ensure max 3 prefer, 1 strong prefer
             const preferCount = Object.entries(sectionPreferences).filter(
               ([, rank]) => rank === "prefer",
             ).length;
             if (preferCount > allowedPreferTokens) {
               throw new TRPCError({
                 code: "BAD_REQUEST",
-                message: `Cannot prefer more than 3 sections.`,
+                message: `Cannot prefer more than ${allowedPreferTokens} sections.`,
               });
             }
 
@@ -284,7 +283,7 @@ export const studentFormRoute = createTRPCRouter({
             if (strongPreferCount > allowedStrongTokens) {
               throw new TRPCError({
                 code: "BAD_REQUEST",
-                message: `Cannot strongly prefer more than 1 section.`,
+                message: `Cannot strongly prefer more than ${allowedStrongTokens} sections.`,
               });
             }
 
