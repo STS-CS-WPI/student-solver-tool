@@ -275,7 +275,7 @@ export default function DashboardContent() {
                 </div>
                 {staff.pending.length > 0 && (
                   <div className="mt-4 flex flex-wrap gap-2">
-                    {([Role.PLA, Role.TA] as const).map((role) => {
+                    {([Role.PLA, Role.TA, Role.GLA] as const).map((role) => {
                       const roleCount = staff.pending.filter((s) =>
                         s.roles.includes(role),
                       ).length;
@@ -425,7 +425,7 @@ export default function DashboardContent() {
                       </h3>
                     </div>
                     <div className="space-y-2">
-                      {([Role.PLA, Role.TA] as const).map((role) => {
+                      {([Role.PLA, Role.TA, Role.GLA] as const).map((role) => {
                         const roleStat = staff.roleStats[role];
                         if (!roleStat || roleStat.submitted === 0) return null;
                         return (

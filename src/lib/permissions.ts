@@ -94,6 +94,15 @@ const ROLES = {
   },
   GLA: {
     pages: { view: canViewPage },
+    staffPreferenceForm: {
+      create: (user, data) =>
+        data.userId === user.id && data.isAllowedInActiveTerm,
+      update: (user, data) =>
+        data.userId === user.id && data.isAllowedInActiveTerm,
+      viewActiveTerm: (user, data) =>
+        data.userId === user.id && data.isAllowedInActiveTerm,
+      viewHistory: (user, data) => data.userId === user.id,
+    },
   },
 } as const satisfies RolesWithPermissions;
 

@@ -230,11 +230,12 @@ export const termRoute = createTRPCRouter({
 
           const roles = user.roles;
 
-          const isTaOrPla = roles.some(
-            (r) => r.role === Role.TA || r.role === Role.PLA,
+          const isAssistant = roles.some(
+            (r) =>
+              r.role === Role.TA || r.role === Role.PLA || r.role === Role.GLA,
           );
 
-          if (isTaOrPla) {
+          if (isAssistant) {
             // Exception:
             // If user is TA or PLA, the *new* role takes precedence:
             //  -> wipe old roles and set only the new one
