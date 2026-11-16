@@ -5,7 +5,12 @@ declare global {
   namespace Cypress {
     interface Chainable {
       loginAs(
-        passwordKey: "testpla" | "testta" | "testprof" | "testcoordinator",
+        passwordKey:
+          | "testpla"
+          | "testta"
+          | "testgla"
+          | "testprof"
+          | "testcoordinator",
       ): Chainable<void>;
     }
   }

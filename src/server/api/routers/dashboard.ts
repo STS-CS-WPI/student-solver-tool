@@ -176,7 +176,7 @@ export const dashboardRoute = createTRPCRouter({
       // Fetch all staff with their preferences for this term
       const staffUsers = await ctx.db.user.findMany({
         where: {
-          roles: { some: { role: { in: ["PLA", "TA"] } } },
+          roles: { some: { role: { in: ["PLA", "TA", "GLA"] } } },
         },
         include: {
           roles: true,
@@ -219,14 +219,15 @@ export const dashboardRoute = createTRPCRouter({
       }, 0);
 
       const roleStats: Record<
-        "TA" | "PLA",
+        "TA" | "PLA" | "GLA",
         { pending: number; submitted: number }
       > = {
         [Role.PLA]: { pending: 0, submitted: 0 },
         [Role.TA]: { pending: 0, submitted: 0 },
+        [Role.GLA]: { pending: 0, submitted: 0 },
       };
 
-      (["PLA", "TA"] as const).forEach((role) => {
+      (["PLA", "TA", "GLA"] as const).forEach((role) => {
         roleStats[role].pending = pendingStaff.filter((s) =>
           s.roles.includes(role),
         ).length;
