@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "../ui/scroll-area";
 
-export const STAFF_SIDEBAR_ID = "do" as const;
+export const STAFF_SIDEBAR_ID = "StaffSelectionSidebar" as const;
 
 export type StaffSelectionSidebarProps = {
   sectionId: string;
