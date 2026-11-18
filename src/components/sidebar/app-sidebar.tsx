@@ -18,7 +18,7 @@ import { NavUser } from "./nav-user";
 export async function AppSidebar() {
   const session = await auth();
 
-  const reportBugLink = `mailto:gr-ta-pla-tooling-mqp@wpi.edu?subject=${encodeURIComponent("STS Bug Report")}`;
+  const reportBugLink = `mailto:gr-sts26-27@wpi.edu?subject=${encodeURIComponent("STS Bug Report")}`;
 
   return (
     <Sidebar collapsible="icon">
