@@ -1,0 +1,8 @@
+[Unit]
+Description=STS SQLite archive backup
+Wants=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/sts/deploy/backup.sh --label archive

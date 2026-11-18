@@ -73,3 +73,65 @@ You can then copy the database to your local computer by running something like 
 ```bash
 scp <your username>@sts.cs.wpi.edu:/tmp/prod.db ./prisma/dev.db
 ```
+
+## Backups
+
+There are two kinds of SQLite backups. Both are written to `/home/backups`.
+
+- **Deploy:** every `./deploy/deploy.sh` (unless `--no-backup`). Named `prod.db.<timestamp>`.
+- **Archive:** 12:00 on the 1st of every other month (Feb, Apr, ... Dec). Named `prod.db.<timestamp>-archive`. The newest 6 are kept and older ones are deleted.
+
+The archive backups are taken by a systemd timer that runs `deploy/backup.sh --label archive`.
+
+### Manual backup
+
+```bash
+./deploy/backup.sh --label manual
+```
+
+This writes `prod.db.<timestamp>-manual`. Manual backups are never pruned.
+The script uses SQLite's online backup and checks the result, so it is safe to run while the app is up.
+If anything fails it exits with an error and does not leave a backup file behind.
+
+### Install the archive timer
+
+Run this once from `/opt/sts` (needs sudo):
+
+```bash
+sudo cp deploy/systemd/sts-backup-archive.{service,timer} /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now sts-backup-archive.timer
+```
+
+To stop the archive backups, run `sudo systemctl disable --now sts-backup-archive.timer`.
+
+If the server is off at the scheduled time, the backup runs the next time it boots.
+
+### Check that it works
+
+```bash
+systemctl list-timers sts-backup-archive.timer     # shows the next run
+sudo systemctl start sts-backup-archive.service    # take an archive backup right now
+journalctl -u sts-backup-archive                   # logs, including errors
+ls -l /home/backups
+```
+
+A failed run shows up as `failed` in `systemctl status sts-backup-archive.service`.
+Nothing alerts you, so check this after the 1st of each backup month.
+
+### Restore a backup
+
+This will replace the live database be careful.
+To see the available backups, run `ls /home/backups`.
+
+```bash
+cd /opt/sts
+export STS_IMAGE_TAG=<full-commit-sha>   # same value used for deploying
+docker compose stop sts
+
+# keeps the current db as prod.db.before-restore, then restores the chosen backup
+docker run --rm -v sts_sqlite:/data -v /home/backups:/backups alpine:3 sh -c \
+  'cp /data/prod.db /backups/prod.db.before-restore && cp /backups/<backup file> /data/prod.db'
+
+docker compose start sts
+```

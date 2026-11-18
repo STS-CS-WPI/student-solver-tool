@@ -1,0 +1,9 @@
+[Unit]
+Description=STS SQLite archive backup (every 2 months)
+
+[Timer]
+OnCalendar=*-02,04,06,08,10,12-01 12:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
