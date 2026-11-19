@@ -28,3 +28,6 @@ export function defaultMarginOfErrorOverAllocationHours() {
 }
 
 export const unknownProfessorName = "TBD";
+
+export const allowedStrongTokens = 2;
+export const allowedPreferTokens = 5;

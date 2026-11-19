@@ -31,7 +31,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import {
   Card,
   CardAction,
@@ -60,7 +59,7 @@ type SyncSectionsFormProps = {
   children?: ReactNode;
 };
 
-function getAddSectionsApi() {
+function useAddSectionsMutation() {
   const utils = api.useUtils();
   const addSectionsApi = api.term.addSectionsToTerm.useMutation({
     onSuccess({ count, unresolvedProfessorNames }) {
@@ -105,7 +104,9 @@ export function SyncSectionsForm({
           <DialogTitle>
             Sync sections for term {year} {termLetter}
           </DialogTitle>
-          <DialogDescription></DialogDescription>
+          <DialogDescription>
+            Add sections from the course listing API, a CSV file, or the form.
+          </DialogDescription>
         </DialogHeader>
         <Tabs defaultValue="api">
           <TabsList>
@@ -135,7 +136,7 @@ export function SyncSectionsForm({
 }
 
 function CSVCourseForm({ year, termLetter }: SyncSectionsFormProps) {
-  const addSectionsApi = getAddSectionsApi();
+  const addSectionsApi = useAddSectionsMutation();
   function handleSubmit(sections: SectionItem[]) {
     addSectionsApi.mutate({ year, termLetter, sections });
   }
@@ -165,7 +166,7 @@ function CSVCourseForm({ year, termLetter }: SyncSectionsFormProps) {
 
 function OneCourseForm({ year, termLetter }: SyncSectionsFormProps) {
   const [professors] = api.user.getAllProfessors.useSuspenseQuery();
-  const addSectionsApi = getAddSectionsApi();
+  const addSectionsApi = useAddSectionsMutation();
 
   function handleSubmit(data: SectionItem) {
     addSectionsApi.mutate({
@@ -194,7 +195,7 @@ function CourseListingApiForm({ year, termLetter }: SyncSectionsFormProps) {
       termLetter,
     });
 
-  const addSectionsApi = getAddSectionsApi();
+  const addSectionsApi = useAddSectionsMutation();
 
   const anyProfessorsNotCreatedYet = sections.some(
     (c) => !c.professorIsAllowedOnTerm,
@@ -261,11 +262,10 @@ function CourseListingApiForm({ year, termLetter }: SyncSectionsFormProps) {
               >
                 https://courselistings.wpi.edu
               </a>
-              . The required hours are how much staff hours are allocated for
-              this course.
+              . Required hours specify the staff hours allocated to each
+              section.
               <br />
-              NOTE: submitting this data will delete all the current sections in
-              the database.
+              Submitting replaces all current sections for this term.
             </p>
           </CardDescription>
           <CardAction>
@@ -294,22 +294,24 @@ function CourseListingApiForm({ year, termLetter }: SyncSectionsFormProps) {
       </Card>
       <AlertDialog>
         <AlertDialogTrigger asChild>
-          <Button>Submit</Button>
+          <Button disabled={addSectionsApi.isPending}>Submit</Button>
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete your
-              all the current linked sections to this term and override them
-              with these sections.
+              This action cannot be undone. This will replace all sections
+              currently linked to this term with the sections shown here.
               {anyProfessorsNotCreatedYet &&
                 " There are professors who have not yet been added to this term. This means that some sections you are about to submit will have no professor."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleSubmit}>
+            <AlertDialogAction
+              onClick={handleSubmit}
+              disabled={addSectionsApi.isPending}
+            >
               Continue
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -394,6 +396,7 @@ function SectionTable({
                   step={10}
                   className="inline-block w-28"
                   value={requiredHours}
+                  aria-label={`Required hours for ${courseCode}-${courseSection}`}
                   onChange={(e) =>
                     onRequiredHoursChange(
                       courseSection + courseCode + courseTitle,
@@ -406,7 +409,9 @@ function SectionTable({
               {/* TODO: Add edit button to perhaps select a different prof for that course */}
               <TableCell className="flex flex-row items-end justify-end space-x-2">
                 <button
+                  type="button"
                   className="inline-block cursor-pointer"
+                  aria-label={`Remove ${courseCode}-${courseSection} from import`}
                   onClick={() =>
                     onDelete(courseSection + courseCode + courseTitle)
                   }
@@ -416,6 +421,16 @@ function SectionTable({
               </TableCell>
             </TableRow>
           ),
+        )}
+        {courses.length === 0 && (
+          <TableRow>
+            <TableCell
+              colSpan={6}
+              className="text-muted-foreground h-10 text-center"
+            >
+              No sections to import.
+            </TableCell>
+          </TableRow>
         )}
       </TableBody>
       <TableFooter>

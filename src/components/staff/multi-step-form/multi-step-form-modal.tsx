@@ -79,7 +79,10 @@ const MultiStepFormModal: React.FC<MultiStepFormModalProps> = ({
       setMode("editing");
       toast.success("Previous preferences deleted");
     },
-    onError: (error) => toast.error(error.message),
+    onError: (error) =>
+      toast.error("Failed to reset preferences", {
+        description: error.message,
+      }),
   });
 
   // restore persisted answers into formats expected for each step in form
@@ -117,7 +120,7 @@ const MultiStepFormModal: React.FC<MultiStepFormModalProps> = ({
   const cantEditContainer = (
     <div className="mb-8">
       <h1 className="text-3xl font-bold">
-        Preferences Form is closed for {term.termLetter} Term {term.year}
+        Preferences form is closed for {term.termLetter} term {term.year}
       </h1>
       <p className="text-muted-foreground mt-2">
         The coordinator has locked the form, and edits cannot be made at this
@@ -204,7 +207,7 @@ const MultiStepFormModal: React.FC<MultiStepFormModalProps> = ({
               userId={userId}
               termId={termId}
               prevData={currentTimes}
-              onChange={(times) => setCurrentTimes(times)}
+              onChange={setCurrentTimes}
               onNext={handleNext}
               onBack={handleBack}
             />
@@ -214,7 +217,7 @@ const MultiStepFormModal: React.FC<MultiStepFormModalProps> = ({
               userId={userId}
               termId={termId}
               courses={sections}
-              onChange={(ids) => setQualifiedSectionIds(ids)}
+              onChange={setQualifiedSectionIds}
               prevData={qualifiedSections}
               onNext={handleNext}
               onBack={handleBack}
@@ -228,7 +231,7 @@ const MultiStepFormModal: React.FC<MultiStepFormModalProps> = ({
               courses={sections}
               selectedSectionIds={qualifiedSections}
               prevData={currentPrefs}
-              onChange={(prefs) => setCurrentPrefs(prefs)}
+              onChange={setCurrentPrefs}
               onNext={handleNext}
               onBack={handleBack}
             />
@@ -238,7 +241,7 @@ const MultiStepFormModal: React.FC<MultiStepFormModalProps> = ({
               userId={userId}
               termId={termId}
               prevData={currentComments}
-              onChange={(comments) => setCurrentComments(comments)}
+              onChange={setCurrentComments}
               onSubmit={handleSubmit}
               onBack={handleBack}
             />

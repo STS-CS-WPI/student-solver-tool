@@ -6,7 +6,6 @@ import {
   DatabaseIcon,
   HomeIcon,
   InfoIcon,
-  ScanFaceIcon,
   UsersIcon,
   UserStarIcon,
   History,
