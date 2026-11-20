@@ -2,15 +2,18 @@
 
 import { useState } from "react";
 import { CopyIcon, Check } from "lucide-react";
+import { toast } from "sonner";
 import { Button, type ButtonProps } from "./ui/button";
 
 type CopyButtonProps = ButtonProps & {
   value: string;
+  showErrorToast?: boolean;
   timeout?: number; // how long to show checkmark
 };
 
 export function CopyButton({
   value,
+  showErrorToast = false,
   timeout = 1500,
   children,
   variant = "ghost",
@@ -30,6 +33,7 @@ export function CopyButton({
       }, timeout);
     } catch (err) {
       console.error("Failed to copy:", err);
+      if (showErrorToast) toast.error("Could not copy to clipboard.");
     }
   }
 

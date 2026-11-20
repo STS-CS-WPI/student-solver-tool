@@ -32,30 +32,48 @@ import {
   type DataTableToolbarProps,
 } from "./data-table-toolbar";
 import { Checkbox } from "../ui/checkbox";
+import {
+  ManagementTableToolbar,
+  type ManagementTableToolbarProps,
+} from "./management-table-toolbar";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  toolbarProps?: Omit<DataTableToolbarProps<TData>, "table">;
   selectable?: boolean;
-  onSelectionChange?: (rows: TData[]) => void;
 
   /** Inject actions on the right side of the toolbar */
   renderToolbarActions?: (table: TanstackTable<TData>) => React.ReactNode;
-
-  /** Extra footer content (to the right of pagination, for example) */
-  renderFooterExtras?: (table: TanstackTable<TData>) => React.ReactNode;
 }
+
+type DataTableVariant<TData> =
+  | {
+      variant?: "default";
+      toolbarProps?: Omit<DataTableToolbarProps<TData>, "table">;
+    }
+  | {
+      variant: "management";
+      label: string;
+      getRowId: (row: TData) => string;
+      getRowLabel: (row: TData) => string;
+      renderToolbarLeadingActions?: (
+        table: TanstackTable<TData>,
+      ) => React.ReactNode;
+      toolbarProps?: Omit<
+        ManagementTableToolbarProps<TData>,
+        "table" | "children" | "leadingActions"
+      >;
+    };
 
 export function DataTable<TData, TValue>({
   columns,
   data,
-  toolbarProps,
   selectable = false,
-  onSelectionChange,
-  renderFooterExtras,
   renderToolbarActions,
-}: DataTableProps<TData, TValue>) {
+  ...variantProps
+}: DataTableProps<TData, TValue> & DataTableVariant<TData>) {
+  const management = variantProps.variant === "management";
+  const getRowLabel = management ? variantProps.getRowLabel : undefined;
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -64,18 +82,25 @@ export function DataTable<TData, TValue>({
   );
   const [sorting, setSorting] = React.useState<SortingState>([]);
 
-  if (selectable) {
-    columns = [
+  const tableColumns = React.useMemo<ColumnDef<TData, TValue>[]>(() => {
+    if (!selectable) return columns;
+    return [
       {
         id: "select",
         header: ({ table }) => (
           <Checkbox
             checked={
               table.getIsAllRowsSelected() ||
-              (table.getIsSomeRowsSelected() && "indeterminate")
+              ((management
+                ? table.getFilteredSelectedRowModel().rows.length > 0
+                : table.getIsSomeRowsSelected()) &&
+                "indeterminate")
             }
             onCheckedChange={(value) => table.toggleAllRowsSelected(!!value)}
-            aria-label="Select all"
+            disabled={
+              management && table.getFilteredRowModel().rows.length === 0
+            }
+            aria-label={management ? "Select all filtered rows" : "Select all"}
             className="translate-y-[2px]"
           />
         ),
@@ -83,7 +108,9 @@ export function DataTable<TData, TValue>({
           <Checkbox
             checked={row.getIsSelected()}
             onCheckedChange={(value) => row.toggleSelected(!!value)}
-            aria-label="Select row"
+            aria-label={
+              getRowLabel ? `Select ${getRowLabel(row.original)}` : "Select row"
+            }
             className="translate-y-[2px]"
           />
         ),
@@ -93,10 +120,12 @@ export function DataTable<TData, TValue>({
       },
       ...columns,
     ];
-  }
+  }, [columns, selectable, management, getRowLabel]);
+
   const table = useReactTable({
     data,
-    columns,
+    columns: tableColumns,
+    getRowId: management ? variantProps.getRowId : undefined,
     state: {
       sorting,
       columnVisibility,
@@ -111,7 +140,10 @@ export function DataTable<TData, TValue>({
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
+    onColumnFiltersChange: (updater) => {
+      setColumnFilters(updater);
+      if (management) table.resetPageIndex();
+    },
     onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -119,32 +151,63 @@ export function DataTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
-    autoResetPageIndex: false, // when a row is edited and we refetch the data, this stop it from going back to the first page
+    autoResetPageIndex: false,
   });
 
-  // Whenever selection changes, compute selected data and notify parent
+  const { pageIndex } = table.getState().pagination;
+  const lastPageIndex = Math.max(0, table.getPageCount() - 1);
+  const rows = table.getRowModel().rows;
+  const toolbarActions = renderToolbarActions?.(table);
+  const showEmptyState =
+    rows.length === 0 &&
+    (!management || table.getFilteredRowModel().rows.length === 0);
+
   React.useEffect(() => {
-    if (!onSelectionChange) return;
-
-    const selectedRows = table.getSelectedRowModel().rows;
-    const selectedData = selectedRows.map((row) => row.original);
-
-    onSelectionChange(selectedData);
-  }, [table, rowSelection, onSelectionChange]);
+    if (management && pageIndex > lastPageIndex)
+      table.setPageIndex(lastPageIndex);
+  }, [management, table, pageIndex, lastPageIndex]);
 
   return (
-    <div className="flex flex-col gap-4">
-      <DataTableToolbar table={table} {...toolbarProps}>
-        {renderToolbarActions?.(table)}
-      </DataTableToolbar>
-      <div className="overflow-hidden rounded-md border p-2">
-        <Table>
+    <div className="flex min-w-0 flex-col gap-4">
+      {management ? (
+        <ManagementTableToolbar
+          table={table}
+          {...variantProps.toolbarProps}
+          leadingActions={variantProps.renderToolbarLeadingActions?.(table)}
+        >
+          {toolbarActions}
+        </ManagementTableToolbar>
+      ) : (
+        <DataTableToolbar table={table} {...variantProps.toolbarProps}>
+          {toolbarActions}
+        </DataTableToolbar>
+      )}
+      <div
+        className={
+          management
+            ? "overflow-hidden rounded-md border"
+            : "overflow-hidden rounded-md border p-2"
+        }
+      >
+        <Table scrollLabel={management ? variantProps.label : undefined}>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
+                  const sortDirection =
+                    management && header.column.getIsSorted();
                   return (
-                    <TableHead key={header.id} colSpan={header.colSpan}>
+                    <TableHead
+                      key={header.id}
+                      colSpan={header.colSpan}
+                      aria-sort={
+                        sortDirection === "asc"
+                          ? "ascending"
+                          : sortDirection === "desc"
+                            ? "descending"
+                            : undefined
+                      }
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -158,37 +221,44 @@ export function DataTable<TData, TValue>({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
+            {rows.map((row) => (
+              <TableRow
+                key={row.id}
+                data-state={row.getIsSelected() && "selected"}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+            {showEmptyState && (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
+                  colSpan={
+                    management
+                      ? table.getVisibleLeafColumns().length
+                      : tableColumns.length
+                  }
                   className="h-24 text-center"
                 >
-                  No results.
+                  {management
+                    ? data.length === 0
+                      ? "No rows yet."
+                      : "No rows match your filters."
+                    : "No results."}
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
-      <DataTablePagination table={table} isSelectable={selectable} />
-      {renderFooterExtras?.(table)}
+      <DataTablePagination
+        table={table}
+        isSelectable={selectable}
+        management={management}
+      />
     </div>
   );
 }

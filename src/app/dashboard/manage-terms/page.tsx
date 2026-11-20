@@ -1,14 +1,13 @@
+import { ManagementPage } from "@/components/dashboard/management-layout";
 import { TermTable } from "./term-table";
-import { CreateTermDialogForm } from "./create-term-form";
 
-export default async function MangageTermsPage() {
+export default function ManageTermsPage() {
   return (
-    <div className="flex flex-col space-y-4 p-4">
-      <div className="flex flex-row content-center justify-between">
-        <h1 className="text-foreground text-3xl font-bold">Manage Terms</h1>
-        <CreateTermDialogForm />
-      </div>
+    <ManagementPage
+      title="Manage Terms"
+      description="Manage terms and their submission deadlines."
+    >
       <TermTable />
-    </div>
+    </ManagementPage>
   );
 }

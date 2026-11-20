@@ -1,143 +1,121 @@
 "use client";
 
-import { type ColumnDef } from "@tanstack/react-table";
-import { DataTableColumnHeader } from "@/components/data-table";
+import type { ColumnDef } from "@tanstack/react-table";
+import { CopyButton } from "@/components/copy-button";
+import { filterBySelectedValues } from "@/components/data-table/data-table-filters";
+import { ManagementColumnHeader } from "@/components/data-table/management-column-header";
+import {
+  formatTableText,
+  TableValue,
+} from "@/components/data-table/table-value";
+import { Badge } from "@/components/ui/badge";
+import { unknownProfessorName } from "@/lib/constants";
+import { humanizeKey, toFullCourseName } from "@/lib/utils";
 import type { RouterOutputs } from "@/trpc/react";
 import { CourseTableRowAction } from "./course-table-row-actions";
-import { CopyButton } from "@/components/copy-button";
-import { unknownProfessorName } from "@/lib/constants";
-import { TriangleAlertIcon } from "lucide-react";
-import { humanizeKey } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 
 export type CourseRow =
   RouterOutputs["courses"]["getAllCourses"]["courses"][number];
 
+export function getCourseLabel(course: CourseRow) {
+  return toFullCourseName(
+    course.courseCode,
+    course.courseSection,
+    course.courseTitle,
+  );
+}
+
+function getProfessorName(course: CourseRow) {
+  return course.professorName === unknownProfessorName
+    ? undefined
+    : course.professorName;
+}
+
 export const createColumns = (): ColumnDef<CourseRow>[] => [
   {
     accessorKey: "courseTitle",
-    accessorFn: (row) => row.courseTitle,
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Title" />
-    ),
-    cell: ({ row }) => {
-      const fullTitle = `${row.original.courseCode}-${row.original.courseSection} - ${row.original.courseTitle}`;
-
-      return <div title={fullTitle}>{fullTitle}</div>;
-    },
+    meta: { label: "Title", exportValue: getCourseLabel },
+    header: ({ column }) => <ManagementColumnHeader column={column} />,
+    cell: ({ row }) => <TableValue value={getCourseLabel(row.original)} />,
     filterFn: (row, _, filterValue) => {
-      const term = String(filterValue ?? "").toLowerCase();
-      if (!term) return true;
-
-      const name = (row.original.professorName ?? "").toLowerCase();
-      const email = (row.original.professorEmail ?? "").toLowerCase();
-      const title =
-        `${row.original.courseCode}-${row.original.courseSection} - ${row.original.courseTitle}`.toLowerCase();
-
-      return (
-        name.includes(term) || email.includes(term) || title.includes(term)
-      );
+      const query = String(filterValue ?? "")
+        .trim()
+        .toLowerCase();
+      return [
+        getCourseLabel(row.original),
+        row.original.professorName,
+        row.original.professorEmail,
+      ].some((value) => value.toLowerCase().includes(query));
     },
   },
   {
-    accessorKey: "professorName",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Professor" />
-    ),
-    cell: ({ row }) => {
-      const { professorName, professorEmail } = row.original;
-      const isUnsetProfessor = professorName === unknownProfessorName;
-
+    id: "professorName",
+    accessorFn: getProfessorName,
+    meta: {
+      label: "Professor",
+      exportValue: (course) =>
+        formatTableText(
+          getProfessorName(course),
+          course.professorId ? "Not set" : "Unassigned",
+        ),
+    },
+    header: ({ column }) => <ManagementColumnHeader column={column} />,
+    sortUndefined: "last",
+    filterFn: (row, _, filterValue) => {
+      const selected = filterValue as string[] | undefined;
+      const status = row.original.professorId ? "assigned" : "unassigned";
+      return !selected?.length || selected.includes(status);
+    },
+    cell: ({ row, getValue }) => {
+      const { professorEmail, professorId } = row.original;
+      const email = professorEmail.trim();
       return (
         <div className="flex items-center gap-2">
-          {isUnsetProfessor ? (
-            <p
-              title="This course does not have a professor assigned to it."
-              className="ml-1 flex flex-row gap-2"
-            >
-              <TriangleAlertIcon className="text-destructive size-5" />{" "}
-              <span className="text-muted-foreground line-through">
-                {professorName}
-              </span>
-            </p>
-          ) : (
-            <>
-              <CopyButton value={professorEmail} title="Copy email" />
-              {professorName}
-            </>
+          {email && (
+            <CopyButton
+              value={email}
+              showErrorToast
+              title="Copy professor email"
+              aria-label="Copy professor email"
+            />
           )}
+          <TableValue
+            value={getValue<string | undefined>()}
+            emptyLabel={professorId ? "Not set" : "Unassigned"}
+          />
         </div>
       );
     },
   },
   {
     accessorKey: "enrollment",
-    accessorFn: (row) => row.enrollment,
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Enrollment" />
-    ),
-    cell: ({ row }) => {
-      const { enrollment, capacity } = row.original;
-      return (
-        <p>
-          {enrollment}/{capacity}
-        </p>
-      );
-    },
+    meta: { label: "Enrollment" },
+    header: ({ column }) => <ManagementColumnHeader column={column} />,
+    cell: ({ row }) => `${row.original.enrollment}/${row.original.capacity}`,
   },
   {
     accessorKey: "requiredHours",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Required hours" />
-    ),
-    cell: ({ row }) => {
-      const hours = row.original.requiredHours;
-      return `${hours} hrs`;
-    },
+    meta: { label: "Required hours" },
+    header: ({ column }) => <ManagementColumnHeader column={column} />,
+    cell: ({ row }) => `${row.original.requiredHours} hrs`,
   },
   {
     accessorKey: "academicLevel",
-    accessorFn: (row) => row.academicLevel,
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Academic level" />
+    meta: {
+      label: "Academic level",
+      exportValue: (course) => humanizeKey(course.academicLevel),
+    },
+    header: ({ column }) => <ManagementColumnHeader column={column} />,
+    cell: ({ row }) => (
+      <Badge variant="outline">{humanizeKey(row.original.academicLevel)}</Badge>
     ),
-    cell: ({ row }) => {
-      const { academicLevel } = row.original;
-      return <Badge variant="outline">{humanizeKey(academicLevel)}</Badge>;
-    },
-    filterFn: "equals",
-  },
-  // Derived, hidden column used *only* for faceted filtering
-  {
-    id: "hasProfessor",
-    accessorFn: (row) =>
-      !!row.professorName && row.professorName !== unknownProfessorName,
-    // never export
-    meta: { export: false },
-    enableHiding: false,
-    // we don't actually render this anywhere
-    cell: () => null,
-    header: () => null,
-    filterFn: (row, columnId, filterValue) => {
-      const values = (filterValue ?? []) as string[];
-      if (!values.length) return true;
-
-      const hasProfessor = row.getValue<boolean>(columnId);
-
-      const wantsAssigned = values.includes("assigned");
-      const wantsUnassigned = values.includes("unassigned");
-
-      if (hasProfessor && wantsAssigned) return true;
-      if (!hasProfessor && wantsUnassigned) return true;
-
-      return false;
-    },
+    filterFn: filterBySelectedValues,
   },
   {
     id: "actions",
     meta: { export: false },
-    cell: ({ row }) => {
-      return <CourseTableRowAction course={row.original} />;
-    },
+    enableHiding: false,
+    header: () => <span className="sr-only">Actions</span>,
+    cell: ({ row }) => <CourseTableRowAction course={row.original} />,
   },
 ];

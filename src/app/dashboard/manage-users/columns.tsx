@@ -7,7 +7,12 @@ import { Lock, Unlock, CheckIcon, XIcon } from "lucide-react";
 import { RoleBadges } from "@/components/role-badge";
 
 import { CopyButton } from "@/components/copy-button";
-import { DataTableColumnHeader } from "@/components/data-table";
+import { ManagementColumnHeader } from "@/components/data-table/management-column-header";
+import { filterBySelectedValues } from "@/components/data-table/data-table-filters";
+import {
+  formatTableText,
+  TableValue,
+} from "@/components/data-table/table-value";
 import type { UserTableRow } from "./manage-users-content";
 import { UserTableRowAction } from "./user-table-row-actions";
 import { isAssistant } from "@/lib/utils";
@@ -20,17 +25,20 @@ import { GlobalSuspense } from "@/components/global-suspense";
 import StaffDashboardFormSumary from "@/components/staff/staff-dashboard-form-summary";
 import { CoursesCard } from "@/components/professor/professor-dashboard/courses-card";
 
+export function getUserLabel(user: UserTableRow) {
+  return [user.name?.trim(), user.email?.trim()].find(Boolean) ?? "user";
+}
+
 export const createColumns = (
   selectedTermId: string,
 ): ColumnDef<UserTableRow>[] => [
   {
     accessorKey: "name",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Name" />
+    meta: { label: "Name", exportValue: (user) => formatTableText(user.name) },
+    header: ({ column }) => <ManagementColumnHeader column={column} />,
+    cell: ({ row }) => (
+      <TableValue value={row.original.name} className="font-medium" />
     ),
-    cell: ({ row }) => {
-      return <div className="font-medium">{row.original.name}</div>;
-    },
     filterFn: (row, _, filterValue) => {
       const term = String(filterValue ?? "").toLowerCase();
       if (!term) return true;
@@ -43,20 +51,27 @@ export const createColumns = (
   },
   {
     accessorKey: "email",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Email" />
-    ),
+    meta: {
+      label: "Email",
+      exportValue: (user) => formatTableText(user.email),
+    },
+    header: ({ column }) => <ManagementColumnHeader column={column} />,
     cell: ({ row }) => {
-      const email = row.original.email ?? "";
-      const name = row.original.name ?? "";
+      const email = row.original.email?.trim();
+      if (!email) return <TableValue />;
       return (
         <div className="flex items-center gap-2">
-          <CopyButton value={email} title="Copy email" />
+          <CopyButton
+            value={email}
+            showErrorToast
+            title="Copy email"
+            aria-label={`Copy ${email}`}
+          />
           <Button
             asChild
             variant="link"
             className="text-foreground p-0"
-            title={`Send email to ${name}`}
+            title={`Send email to ${getUserLabel(row.original)}`}
           >
             <a href={`mailto:${email}`}>{email}</a>
           </Button>
@@ -66,24 +81,28 @@ export const createColumns = (
   },
   {
     accessorKey: "roles",
-    header: "Role",
+    meta: {
+      label: "Roles",
+      exportValue: (user) => formatTableText(user.roles.join("; ")),
+    },
+    header: ({ column }) => <ManagementColumnHeader column={column} />,
+    sortingFn: (a, b) =>
+      a.original.roles.join(", ").localeCompare(b.original.roles.join(", ")),
     cell: ({ row }) => {
       const roles = row.original.roles ?? [];
-      return <RoleBadges roles={roles} />;
+      return roles.length ? <RoleBadges roles={roles} /> : <TableValue />;
     },
     filterFn: "arrIncludesSome",
   },
   {
     accessorKey: "hasPreference",
-    header: "Preference form status",
-    filterFn: (row, columnId, filterValue) => {
-      const selected = filterValue as string[] | undefined;
-      if (!selected || selected.length === 0) return true;
-
-      const value = row.getValue<boolean>(columnId);
-      const valueAsString = value ? "true" : "false";
-      return selected.includes(valueAsString);
+    meta: {
+      label: "Preference form status",
+      exportValue: (user) =>
+        user.hasPreference ? "Submitted" : "Not submitted",
     },
+    header: ({ column }) => <ManagementColumnHeader column={column} />,
+    filterFn: filterBySelectedValues,
     cell: ({ row }) => {
       const hasPreference = row.original.hasPreference;
       const userId = row.original.id;
@@ -135,7 +154,11 @@ export const createColumns = (
   },
   {
     accessorKey: "locked",
-    header: "Preference form access",
+    meta: {
+      label: "Preference form access",
+      exportValue: (user) => (user.locked ? "Locked" : "Unlocked"),
+    },
+    header: ({ column }) => <ManagementColumnHeader column={column} />,
     cell: ({ row }) => {
       const locked = row.original.locked;
 
@@ -153,20 +176,19 @@ export const createColumns = (
         </Badge>
       );
     },
-    filterFn: (row, columnId, filterValue) => {
-      const selected = filterValue as string[] | undefined;
-      if (!selected || selected.length === 0) return true;
-
-      const value = row.getValue<boolean>(columnId);
-      const valueAsString = value ? "true" : "false";
-      return selected.includes(valueAsString);
-    },
+    filterFn: filterBySelectedValues,
   },
   {
     id: "actions",
     meta: { export: false },
+    enableHiding: false,
+    header: () => <span className="sr-only">Actions</span>,
     cell: ({ row }) => (
-      <UserTableRowAction termId={selectedTermId} user={row.original} />
+      <UserTableRowAction
+        termId={selectedTermId}
+        user={row.original}
+        label={getUserLabel(row.original)}
+      />
     ),
   },
 ];

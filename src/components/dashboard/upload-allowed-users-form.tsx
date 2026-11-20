@@ -24,13 +24,13 @@ import { FieldGroup } from "../ui/field";
 import { FormCombobox, FormInput } from "../form";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { useState, type ComponentProps, type ReactNode } from "react";
-import { PlusCircleIcon } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 
 export function UploadAllowedUsersForm({
   termId,
   children = (
     <Button>
-      <PlusCircleIcon /> Add Users
+      <PlusIcon /> Add users
     </Button>
   ),
   open: controlledOpen,

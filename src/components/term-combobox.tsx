@@ -34,6 +34,7 @@ import {
   useContext,
   useMemo,
   useState,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
@@ -57,6 +58,7 @@ import { Skeleton } from "./ui/skeleton";
 import { api, type RouterOutputs } from "@/trpc/react";
 import { Badge } from "./ui/badge";
 import { useSessionStorage } from "@/hooks/use-session-storage";
+import { LoadingSpinner } from "./loading-spinner";
 
 export type Term = RouterOutputs["term"]["getTerms"]["all"][number];
 
@@ -73,9 +75,15 @@ const EMPTY_TERMS: Term[] = [];
 const NO_ACTIVE: Term | null = null;
 
 const TermContext = createContext<TermContextValue | null>(null);
+const emptySubscribe = () => () => undefined;
 
 // you can call useTerm() anywhere
 export function TermProvider({ children }: { children: ReactNode }) {
+  const hasHydrated = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false,
+  );
   const [data] = api.term.getTerms.useSuspenseQuery();
   // Grab raw values
   const rawAll = data?.all;
@@ -85,16 +93,17 @@ export function TermProvider({ children }: { children: ReactNode }) {
   const all = useMemo(() => rawAll ?? EMPTY_TERMS, [rawAll]);
   const active = useMemo(() => rawActive ?? NO_ACTIVE, [rawActive]);
 
-  // Default selectedId = active term id, or first term id, or null
-  const [selectedId, setSelectedId] = useSessionStorage<string | null>(
+  const [storedTermId, setSelectedId] = useSessionStorage<string | null>(
     "sts:selectedTermId",
-    active?.id ?? all[0]?.id ?? null,
+    null,
   );
 
   const selectedTerm = useMemo(
-    () => all.find((t) => t.id === selectedId) ?? null,
-    [all, selectedId],
+    () =>
+      all.find((term) => term.id === storedTermId) ?? active ?? all[0] ?? null,
+    [all, active, storedTermId],
   );
+  const selectedId = selectedTerm?.id ?? null;
 
   const value = useMemo(
     () => ({
@@ -106,6 +115,14 @@ export function TermProvider({ children }: { children: ReactNode }) {
     }),
     [all, active, selectedId, selectedTerm, setSelectedId],
   );
+
+  if (!hasHydrated) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
+  }
 
   return <TermContext.Provider value={value}>{children}</TermContext.Provider>;
 }
@@ -142,6 +159,9 @@ function TermComboboxInternal() {
           variant="outline"
           role="combobox"
           aria-expanded={open}
+          aria-label={
+            selectedTerm ? `Term: ${selectedTerm.label}` : "Select term"
+          }
           className="w-[200px] justify-between"
         >
           {selectedTerm ? selectedTerm.label : "Select term..."}
