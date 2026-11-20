@@ -10,21 +10,32 @@ type Refetchable = {
 export function RefetchButton({
   query,
   children,
+  iconOnly = false,
+  disabled,
   ...props
 }: {
   query: Refetchable;
+  iconOnly?: boolean;
 } & ButtonProps) {
   const { refetch, isRefetching } = query;
 
   return (
     <Button
-      onClick={() => refetch()}
-      disabled={isRefetching}
-      variant="outline"
+      type="button"
+      variant={iconOnly ? "ghost" : "outline"}
+      size={iconOnly ? "icon" : undefined}
+      title={iconOnly ? "Refresh" : undefined}
+      aria-label={iconOnly ? "Refresh" : undefined}
+      aria-busy={isRefetching}
       {...props}
+      onClick={() => refetch()}
+      disabled={isRefetching || disabled}
     >
-      <RefreshCwIcon className={isRefetching ? "animate-spin" : ""} />{" "}
-      {children ?? "Re-fetch"}
+      <RefreshCwIcon
+        aria-hidden="true"
+        className={isRefetching ? "animate-spin" : ""}
+      />
+      {!iconOnly && (children ?? "Re-fetch")}
     </Button>
   );
 }

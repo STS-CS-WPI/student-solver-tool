@@ -1,90 +1,79 @@
 "use client";
 
-import { api } from "@/trpc/react";
-
-import { DataTable } from "@/components/data-table";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { createColumns } from "./columns";
-import { TermCombobox, useTerm } from "@/components/term-combobox";
-import { SyncSectionsForm } from "@/components/dashboard/sync-sections-form";
+import { useMemo } from "react";
 import { AcademicLevel } from "@prisma/client";
-import { humanizeKey } from "@/lib/utils";
+import {
+  ManagementPage,
+  ManagementTableCard,
+} from "@/components/dashboard/management-layout";
 import { NoTermsAlert } from "@/components/dashboard/no-term-alert";
+import { SyncSectionsForm } from "@/components/dashboard/sync-sections-form";
+import { DataTable } from "@/components/data-table";
 import { RefetchButton } from "@/components/refetch-button";
+import { TermCombobox, useTerm, type Term } from "@/components/term-combobox";
+import { humanizeKey } from "@/lib/utils";
+import { api } from "@/trpc/react";
+import { createColumns, getCourseLabel } from "./columns";
 
 export default function ManageCoursesContent() {
   const { selectedTerm } = useTerm();
 
   if (!selectedTerm) return <NoTermsAlert />;
 
+  return (
+    <ManagementPage
+      title="Manage Courses"
+      description={`Managing courses for ${selectedTerm.label} term`}
+      actions={<TermCombobox />}
+    >
+      <ManageTermCourses key={selectedTerm.id} selectedTerm={selectedTerm} />
+    </ManagementPage>
+  );
+}
+
+function ManageTermCourses({ selectedTerm }: { selectedTerm: Term }) {
   const [{ courses }, courseApi] = api.courses.getAllCourses.useSuspenseQuery({
-    termId: selectedTerm?.id,
+    termId: selectedTerm.id,
   });
+  const columns = useMemo(createColumns, []);
 
   return (
-    <div className="p-4">
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div>
-            <h1 className="text-foreground text-3xl font-bold">
-              Manage Courses
-            </h1>
-            <p className="text-muted-foreground text-sm">
-              Managing courses for {selectedTerm.label} term
-            </p>
-          </div>
-        </div>
-        <TermCombobox />
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Courses</CardTitle>
-          <CardDescription>
-            Add, edit, and remove course for the selected term.
-          </CardDescription>
-          <CardAction>
-            <RefetchButton query={courseApi} />
-          </CardAction>
-        </CardHeader>
-        <CardContent>
-          <DataTable
-            columns={createColumns()}
-            data={courses}
-            selectable
-            toolbarProps={{
-              searchPlaceholder: "Filter courses...",
-              searchColumnId: "courseTitle",
-              facetedFilters: [
-                {
-                  columnId: "hasProfessor",
-                  title: "Professor assignment",
-                  options: [
-                    { label: "Has professor", value: "assigned" },
-                    { label: "No professor", value: "unassigned" },
-                  ],
-                },
-                {
-                  columnId: "academicLevel",
-                  title: "Academic level",
-                  options: Object.values(AcademicLevel).map((value) => ({
-                    value,
-                    label: humanizeKey(value),
-                  })),
-                },
+    <ManagementTableCard
+      title="Courses"
+      description="Add, edit, and remove courses for the selected term."
+      actions={<RefetchButton query={courseApi} iconOnly />}
+    >
+      <DataTable
+        variant="management"
+        label="Courses"
+        columns={columns}
+        data={courses}
+        getRowId={(course) => course.id}
+        getRowLabel={getCourseLabel}
+        selectable
+        toolbarProps={{
+          searchPlaceholder: "Filter courses...",
+          searchColumnId: "courseTitle",
+          facetedFilters: [
+            {
+              columnId: "professorName",
+              label: "Professor assignment",
+              options: [
+                { label: "Has professor", value: "assigned" },
+                { label: "No professor", value: "unassigned" },
               ],
-            }}
-            renderToolbarActions={() => <SyncSectionsForm {...selectedTerm} />}
-          />
-        </CardContent>
-      </Card>
-    </div>
+            },
+            {
+              columnId: "academicLevel",
+              options: Object.values(AcademicLevel).map((value) => ({
+                value,
+                label: humanizeKey(value),
+              })),
+            },
+          ],
+        }}
+        renderToolbarActions={() => <SyncSectionsForm {...selectedTerm} />}
+      />
+    </ManagementTableCard>
   );
 }

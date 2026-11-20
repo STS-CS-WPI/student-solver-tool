@@ -58,7 +58,7 @@ export function CreateTermDialogForm() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
-          <PlusIcon /> Create new term
+          <PlusIcon /> Add term
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-sm">

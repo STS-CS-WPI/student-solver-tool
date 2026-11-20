@@ -22,23 +22,27 @@ export function useSessionStorage<T>(
   initialValue: T | (() => T),
   options: UseSessionStorageOptions<T> = {},
 ): [T, Dispatch<SetStateAction<T>>, () => void] {
-  const { initializeWithValue = true } = options;
+  const {
+    initializeWithValue = true,
+    serializer: customSerializer,
+    deserializer: customDeserializer,
+  } = options;
 
   const serializer = useCallback<(value: T) => string>(
     (value) => {
-      if (options.serializer) {
-        return options.serializer(value);
+      if (customSerializer) {
+        return customSerializer(value);
       }
 
       return JSON.stringify(value);
     },
-    [options],
+    [customSerializer],
   );
 
   const deserializer = useCallback<(value: string) => T>(
     (value) => {
-      if (options.deserializer) {
-        return options.deserializer(value);
+      if (customDeserializer) {
+        return customDeserializer(value);
       }
       if (value === "undefined") {
         return undefined as unknown as T;
@@ -57,7 +61,7 @@ export function useSessionStorage<T>(
 
       return parsed as T;
     },
-    [options, initialValue],
+    [customDeserializer, initialValue],
   );
 
   const readValue = useCallback((): T => {
@@ -124,7 +128,7 @@ export function useSessionStorage<T>(
 
   useEffect(() => {
     setStoredValue(readValue());
-  }, [key]);
+  }, [readValue]);
 
   const handleStorageChange = useCallback(
     (event: StorageEvent | CustomEvent) => {

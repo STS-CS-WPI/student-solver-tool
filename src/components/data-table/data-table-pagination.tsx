@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -19,25 +20,46 @@ import {
 interface DataTablePaginationProps<TData> {
   table: Table<TData>;
   isSelectable: boolean;
+  management?: boolean;
 }
 
 export function DataTablePagination<TData>({
   table,
   isSelectable,
+  management = false,
 }: DataTablePaginationProps<TData>) {
+  const rowCount = table.getFilteredRowModel().rows.length;
+  if (management && rowCount === 0) return null;
+
+  const buttonSizeClass = management ? undefined : "size-8";
+
   return (
-    <div className="flex items-center justify-between px-2">
-      <div className="text-muted-foreground flex-1 text-sm">
+    <div
+      className={cn(
+        "flex items-center justify-between",
+        management ? "flex-wrap gap-x-4 gap-y-2" : "px-2",
+      )}
+    >
+      <div
+        className={cn("text-muted-foreground text-sm", !management && "flex-1")}
+        role={management ? "status" : undefined}
+      >
         {isSelectable ? (
           <>
-            {table.getFilteredSelectedRowModel().rows.length} of{" "}
-            {table.getFilteredRowModel().rows.length} row(s) selected.
+            {table.getFilteredSelectedRowModel().rows.length} of {rowCount}{" "}
+            row(s) selected.
           </>
         ) : (
-          <>{table.getFilteredRowModel().rows.length} row(s)</>
+          <>{rowCount} row(s)</>
         )}
       </div>
-      <div className="flex items-center space-x-6 lg:space-x-8">
+      <div
+        className={
+          management
+            ? "ml-auto flex flex-wrap items-center justify-end gap-x-3 gap-y-2 sm:gap-x-6 lg:gap-x-8"
+            : "flex items-center space-x-6 lg:space-x-8"
+        }
+      >
         <div className="flex items-center space-x-2">
           <p className="text-sm font-medium">Rows per page</p>
           <Select
@@ -46,10 +68,16 @@ export function DataTablePagination<TData>({
               table.setPageSize(Number(value));
             }}
           >
-            <SelectTrigger className="h-8 w-[70px]">
+            <SelectTrigger
+              className={cn("w-[70px]", !management && "h-8")}
+              aria-label="Rows per page"
+            >
               <SelectValue placeholder={table.getState().pagination.pageSize} />
             </SelectTrigger>
-            <SelectContent position="popper" side="top">
+            <SelectContent
+              position={management ? undefined : "popper"}
+              side={management ? undefined : "top"}
+            >
               <SelectGroup>
                 {[10, 20, 25, 30, 40, 50].map((pageSize) => (
                   <SelectItem key={pageSize} value={`${pageSize}`}>
@@ -60,15 +88,22 @@ export function DataTablePagination<TData>({
             </SelectContent>
           </Select>
         </div>
-        <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+        <div
+          className={
+            management
+              ? "text-sm font-medium whitespace-nowrap sm:w-[100px] sm:text-center"
+              : "flex w-[100px] items-center justify-center text-sm font-medium"
+          }
+        >
           Page {table.getState().pagination.pageIndex + 1} of{" "}
           {table.getPageCount()}
         </div>
         <div className="flex items-center space-x-2">
           <Button
+            type="button"
             variant="outline"
             size="icon"
-            className="hidden size-8 lg:flex"
+            className={cn("hidden lg:flex", buttonSizeClass)}
             onClick={() => table.setPageIndex(0)}
             disabled={!table.getCanPreviousPage()}
           >
@@ -76,9 +111,10 @@ export function DataTablePagination<TData>({
             <ChevronsLeft />
           </Button>
           <Button
+            type="button"
             variant="outline"
             size="icon"
-            className="size-8"
+            className={buttonSizeClass}
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
@@ -86,9 +122,10 @@ export function DataTablePagination<TData>({
             <ChevronLeft />
           </Button>
           <Button
+            type="button"
             variant="outline"
             size="icon"
-            className="size-8"
+            className={buttonSizeClass}
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
@@ -96,9 +133,10 @@ export function DataTablePagination<TData>({
             <ChevronRight />
           </Button>
           <Button
+            type="button"
             variant="outline"
             size="icon"
-            className="hidden size-8 lg:flex"
+            className={cn("hidden lg:flex", buttonSizeClass)}
             onClick={() => table.setPageIndex(table.getPageCount() - 1)}
             disabled={!table.getCanNextPage()}
           >
