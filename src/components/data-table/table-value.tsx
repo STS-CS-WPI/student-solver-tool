@@ -14,21 +14,16 @@ export function TableValue({
   value,
   emptyLabel = "Not set",
   className,
-  title,
 }: {
-  value?: string | number | null;
+  value?: string | null;
   emptyLabel?: EmptyLabel;
   className?: string;
-  title?: string;
 }) {
-  const text = typeof value === "string" ? value.trim() : value;
-  const isMissing = text == null || text === "";
+  const text = value?.trim();
+  const isMissing = !text;
 
   return (
-    <span
-      className={cn(isMissing && "text-muted-foreground", className)}
-      title={title}
-    >
+    <span className={cn(isMissing && "text-muted-foreground", className)}>
       {isMissing ? emptyLabel : text}
     </span>
   );
