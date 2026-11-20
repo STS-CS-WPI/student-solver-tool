@@ -90,7 +90,9 @@ The pre-commit hook runs `lint-staged`, which formats staged files with Prettier
 
 The [CI workflow](./.github/workflows/ci.yml) runs on pull requests and pushes to `main`.
 CI checks lint, formatting, TypeScript types, unit tests, Cypress tests, and both Docker build targets.
-Successful pushes to `main` publish application and migrator images to GHCR, tagged with the full commit SHA.
+Successful pushes to `main` publish runner and migrator images to GHCR, tagged with the full commit SHA.
+Publishing a GitHub release adds release-number tags to those existing images.
+See the [release instructions](./.github/ci-setup.md#releases).
 
 ## Library Documentation
 
