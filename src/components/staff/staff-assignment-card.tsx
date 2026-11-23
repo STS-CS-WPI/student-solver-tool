@@ -70,7 +70,7 @@ const StaffAssignment: React.FC<StaffAssignmentProps> = ({
               <Mail className="text-muted-foreground mt-0.5 h-4 w-4" />
               <div>
                 <p className="text-muted-foreground text-xs font-medium">
-                  Professor's Email
+                  Professor&apos;s Email
                 </p>
                 <a
                   href={`mailto:${professorEmail}`}

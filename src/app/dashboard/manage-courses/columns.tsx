@@ -92,7 +92,7 @@ export const createColumns = (): ColumnDef<CourseRow>[] => [
     ),
     cell: ({ row }) => {
       const hours = row.original.requiredHours;
-      return `${hours}h`;
+      return `${hours} hrs`;
     },
   },
   {

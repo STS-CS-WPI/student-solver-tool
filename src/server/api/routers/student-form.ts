@@ -3,10 +3,7 @@ import { assistantProcedure, createTRPCRouter } from "../trpc";
 import { TRPCError } from "@trpc/server";
 import { hasPermission } from "@/lib/permissions";
 import { isUserAllowedInActiveTerm } from "@/lib/permission-helpers";
-import {
-  allowedPreferTokens,
-  allowedStrongTokens,
-} from "@/components/staff/MultiStepForm/form-entry-preferences";
+import { allowedPreferTokens, allowedStrongTokens } from "@/lib/constants";
 
 /**
  * Router: studentFormRoute
@@ -87,14 +84,10 @@ export const studentFormRoute = createTRPCRouter({
       return { sections };
     }),
 
-  getWeeklyAvailability: assistantProcedure
-    .input(baseInput)
-    .query(async ({ input }) => {
-      const { userId, termId } = input;
-
-      // TODO: query available hours
-      return { availability: [] as unknown[] };
-    }),
+  getWeeklyAvailability: assistantProcedure.input(baseInput).query(() => {
+    // TODO: query available hours
+    return { availability: [] as unknown[] };
+  }),
 
   getQualifications: assistantProcedure
     .input(baseInput)
@@ -137,21 +130,17 @@ export const studentFormRoute = createTRPCRouter({
       return { qualifiedSectionIds };
     }),
 
-  getPreferences: assistantProcedure
-    .input(baseInput)
-    .query(async ({ input: { userId, termId }, ctx }) => {
-      // TODO: query prefer/strong tokens on StaffPreference.StaffPreferencePreferredSection
+  getPreferences: assistantProcedure.input(baseInput).query(() => {
+    // TODO: query prefer/strong tokens on StaffPreference.StaffPreferencePreferredSection
 
-      return { preferences: {} as Record<string, string> };
-    }),
+    return { preferences: {} as Record<string, string> };
+  }),
 
-  getComments: assistantProcedure
-    .input(baseInput)
-    .query(async ({ input: { userId, termId }, ctx }) => {
-      // TODO: Query StaffPreference.comments
+  getComments: assistantProcedure.input(baseInput).query(() => {
+    // TODO: Query StaffPreference.comments
 
-      return { comments: null as string | null };
-    }),
+    return { comments: null as string | null };
+  }),
 
   saveStudentForm: assistantProcedure
     .input(
@@ -272,23 +261,19 @@ export const studentFormRoute = createTRPCRouter({
           }
 
           // 5. Upsert preferred sections (replace existing)
-          if (
-            sectionPreferences &&
-            Object.keys(sectionPreferences).length > 0
-          ) {
+          if (sectionPreferences !== undefined) {
             // Delete existing preferences
             await tx.staffPreferencePreferredSection.deleteMany({
               where: { staffPreferenceId: staffPref.id },
             });
 
-            // Ensure max 3 prefer, 1 strong prefer
             const preferCount = Object.entries(sectionPreferences).filter(
               ([, rank]) => rank === "prefer",
             ).length;
             if (preferCount > allowedPreferTokens) {
               throw new TRPCError({
                 code: "BAD_REQUEST",
-                message: `Cannot prefer more than 3 sections.`,
+                message: `Cannot prefer more than ${allowedPreferTokens} sections.`,
               });
             }
 
@@ -298,7 +283,7 @@ export const studentFormRoute = createTRPCRouter({
             if (strongPreferCount > allowedStrongTokens) {
               throw new TRPCError({
                 code: "BAD_REQUEST",
-                message: `Cannot strongly prefer more than 1 section.`,
+                message: `Cannot strongly prefer more than ${allowedStrongTokens} sections.`,
               });
             }
 
@@ -319,19 +304,21 @@ export const studentFormRoute = createTRPCRouter({
           }
 
           // 6. Upsert availability times (replace existing)
-          if (weeklyAvailability && weeklyAvailability.length > 0) {
+          if (weeklyAvailability !== undefined) {
             // Delete existing availability
             await tx.staffAvailableHour.deleteMany({
               where: { staffPreferenceId: staffPref.id },
             });
             // Create new availability
-            await tx.staffAvailableHour.createMany({
-              data: weeklyAvailability.map(({ day, hour }) => ({
-                day,
-                hour,
-                staffPreferenceId: staffPref.id,
-              })),
-            });
+            if (weeklyAvailability.length > 0) {
+              await tx.staffAvailableHour.createMany({
+                data: weeklyAvailability.map(({ day, hour }) => ({
+                  day,
+                  hour,
+                  staffPreferenceId: staffPref.id,
+                })),
+              });
+            }
           }
 
           return { ok: true, staffPreferenceId: staffPref.id };
@@ -340,6 +327,57 @@ export const studentFormRoute = createTRPCRouter({
         return result;
       },
     ),
+
+  // handles deleting an existing form
+  resetStudentForm: assistantProcedure
+    .input(baseInput)
+    .mutation(async ({ input: { userId, termId }, ctx }) => {
+      if (
+        !hasPermission(ctx.session.user, "staffPreferenceForm", "create", {
+          userId,
+          isAllowedInActiveTerm: await isUserAllowedInActiveTerm(
+            ctx.session.user.id,
+          ),
+        })
+      ) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Cannot reset this form.",
+        });
+      }
+      return ctx.db.$transaction(async (tx) => {
+        const user = await tx.user.findUnique({
+          where: { id: userId },
+          select: { canEditForm: true },
+        });
+        if (!user?.canEditForm) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Form editing is locked.",
+          });
+        }
+        // find the existing preference form for this student and term.
+        const existingForm = await tx.staffPreference.findUnique({
+          where: {
+            userId_termId: { userId, termId },
+          },
+          select: { id: true },
+        });
+
+        if (existingForm) {
+          // delete saved availability hours before deleting the parent form.
+          await tx.staffAvailableHour.deleteMany({
+            where: { staffPreferenceId: existingForm.id },
+          });
+          // qualified and preferred sections are removed through cascading deletion.
+          await tx.staffPreference.delete({
+            where: { id: existingForm.id },
+          });
+        }
+
+        return { ok: true };
+      });
+    }),
 
   setAvailabilityForTerm: assistantProcedure
     .input(

@@ -1,4 +1,4 @@
-import MultiStepFormModal from "@/components/staff/MultiStepForm/multi-step-form-modal";
+import MultiStepFormModal from "@/components/staff/multi-step-form/multi-step-form-modal";
 import { redirectToForbidden } from "@/lib/navigation";
 import { hasPermission } from "@/lib/permissions";
 import { isUserAllowedInActiveTerm } from "@/lib/permission-helpers";

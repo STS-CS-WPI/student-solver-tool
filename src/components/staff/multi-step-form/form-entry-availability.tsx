@@ -20,6 +20,9 @@ const FormEntryAvailability: React.FC<AvailabilityProps> = ({
   const updateAvailabilityMutation =
     api.studentForm.saveStudentForm.useMutation({
       onError: (error) => {
+        toast.error("Failed to save availability", {
+          description: error.message,
+        });
         console.error("Failed to update availability:", error);
       },
       onSuccess: (_data, variables) => {

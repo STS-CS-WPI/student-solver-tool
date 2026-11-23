@@ -6,7 +6,6 @@ import {
   DatabaseIcon,
   HomeIcon,
   InfoIcon,
-  ScanFaceIcon,
   UsersIcon,
   UserStarIcon,
   History,
@@ -30,13 +29,13 @@ export const ROUTES: NavItem[] = [
   {
     label: "Home",
     href: "/",
-    allowed: ["COORDINATOR", "PLA", "TA", "PROFESSOR"],
+    allowed: ["COORDINATOR", "PLA", "GLA", "TA", "PROFESSOR"],
     icon: HomeIcon,
   },
   {
     label: "About",
     href: "/about",
-    allowed: ["COORDINATOR", "PLA", "TA", "PROFESSOR"],
+    allowed: ["COORDINATOR", "PLA", "GLA", "TA", "PROFESSOR"],
     icon: InfoIcon,
   },
   {
@@ -81,13 +80,13 @@ export const ROUTES: NavItem[] = [
   {
     label: "Preferences",
     href: "/preferences-form",
-    allowed: ["PLA", "TA"],
+    allowed: ["PLA", "GLA", "TA"],
     icon: FileText,
   },
   {
     label: "History",
     href: "/assignment-history",
-    allowed: ["PLA", "TA"],
+    allowed: ["PLA", "GLA", "TA"],
     icon: History,
   },
   {

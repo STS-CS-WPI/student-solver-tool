@@ -4,7 +4,8 @@ import z from "zod";
 
 export { cn } from "cn";
 
-export const notNullFilter = <T>(s: T): s is NonNullable<T> => !!s;
+export const notNullFilter = <T>(s: T): s is NonNullable<T> =>
+  s !== null && s !== undefined;
 
 export function getPreferenceScore(pref: PreferenceLevel | undefined) {
   const preferenceScoreMap: Record<PreferenceLevel, number> = {
@@ -40,8 +41,8 @@ export function isProfessor(user?: User): boolean {
   return user?.roles?.some((r) => r === "PROFESSOR") ?? false;
 }
 
-export function toFullCourseName(section: string, code: string, title: string) {
-  return `${section}-${code} - ${title}`;
+export function toFullCourseName(code: string, section: string, title: string) {
+  return `${code}-${section} - ${title}`;
 }
 
 /**

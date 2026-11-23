@@ -297,6 +297,7 @@
 
 import {
   motion,
+  type MotionValue,
   useReducedMotion,
   useScroll,
   useTransform,
@@ -311,7 +312,7 @@ type CharacterProps = {
   char: string;
   index: number;
   centerIndex: number;
-  scrollYProgress: any;
+  scrollYProgress: MotionValue<number>;
 };
 
 const CharacterV0 = ({
@@ -418,53 +419,10 @@ const CharacterV2 = ({
   );
 };
 
-const CharacterV3 = ({
-  char,
-  index,
-  centerIndex,
-  scrollYProgress,
-}: CharacterProps) => {
-  const isSpace = char === " ";
-  const distanceFromCenter = index - centerIndex;
-
-  const x = useTransform(
-    scrollYProgress,
-    [0, 0.5],
-    [distanceFromCenter * 90, 0],
-  );
-  const rotate = useTransform(
-    scrollYProgress,
-    [0, 0.5],
-    [distanceFromCenter * 50, 0],
-  );
-
-  const y = useTransform(
-    scrollYProgress,
-    [0, 0.5],
-    [-Math.abs(distanceFromCenter) * 20, 0],
-  );
-  const scale = useTransform(scrollYProgress, [0, 0.5], [0.75, 1]);
-
-  return (
-    <motion.img
-      src={char}
-      className={cn("inline-block", isSpace && "w-4")}
-      style={{
-        x,
-        rotate,
-        y,
-        scale,
-        transformOrigin: "center",
-      }}
-    />
-  );
-};
-
 export default function AboutPage() {
   const targetRef = useRef<HTMLDivElement | null>(null);
   const secondTextRef = useRef<HTMLDivElement | null>(null);
   const targetRef2 = useRef<HTMLDivElement | null>(null);
-  const targetRef3 = useRef<HTMLDivElement | null>(null);
 
   const { scrollYProgress } = useScroll({
     target: targetRef,
@@ -475,9 +433,6 @@ export default function AboutPage() {
   });
   const { scrollYProgress: scrollYProgress2 } = useScroll({
     target: targetRef2,
-  });
-  const { scrollYProgress: scrollYProgress3 } = useScroll({
-    target: targetRef3,
   });
 
   const text = "Student Teaching Staff";
@@ -494,18 +449,6 @@ export default function AboutPage() {
     { id: "member-3", name: "Max" },
     { id: "member-4", name: "Ryan" },
   ];
-  const macIcon = [
-    "/mac/Discord.png",
-    "/mac/figma.png",
-    "/mac/Framer.png",
-    "/mac/Github.png",
-    "/mac/Monog.png",
-    "/mac/notion.png",
-    "/mac/Pieces.png",
-    "/mac/Postman.png",
-    "/mac/vsCode.png",
-  ];
-  const iconCenterIndex = Math.floor(macIcon.length / 2);
 
   return (
     <ReactLenis root>
@@ -580,10 +523,7 @@ export default function AboutPage() {
             ))}
           </div>
         </div>
-        <div
-          ref={targetRef3}
-          className="bg-background relative box-border flex h-[210vh] flex-col items-center justify-center gap-[2vw] overflow-hidden p-[2vw]"
-        >
+        <div className="bg-background relative box-border flex h-[210vh] flex-col items-center justify-center gap-[2vw] overflow-hidden p-[2vw]">
           {" "}
           <p className="font-geist text-primary-300 flex items-center justify-center gap-3 text-2xl font-medium tracking-tight">
             <Bracket className="text-primary-300 h-12" />

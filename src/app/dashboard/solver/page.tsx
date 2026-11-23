@@ -1,5 +1,5 @@
 "use client";
-import { SectionAccordion } from "@/components/solver/section-accordion.tsx";
+import { SectionAccordion } from "@/components/solver/section-accordion";
 import { Separator } from "@/components/ui/separator";
 import {
   ResizableHandle,
@@ -7,10 +7,7 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { useState } from "react";
-import {
-  getSectionPreference,
-  StaffSelectionSidebar,
-} from "@/components/solver/staff-selection-sidebar";
+import { StaffSelectionSidebar } from "@/components/solver/staff-selection-sidebar";
 import { api } from "@/trpc/react";
 import { GlobalSuspense } from "@/components/global-suspense";
 import {
@@ -21,7 +18,7 @@ import {
 } from "@dnd-kit/core";
 import { StaffItem, type StaffItemProps } from "@/components/solver/staff-item";
 import { useLocalStorage } from "@/hooks/use-local-storage";
-import { AleadyAssignedAlert } from "@/components/solver/already-assigned-alert";
+import { AlreadyAssignedAlert } from "@/components/solver/already-assigned-alert";
 import { toast } from "sonner";
 import { useTerm } from "@/components/term-combobox";
 import { SolverPageHeader } from "@/components/solver/page-header";
@@ -37,6 +34,13 @@ type PendingAssign = {
 
 export default function SolverPage() {
   const { selectedId: termId } = useTerm();
+
+  if (!termId) return <NoTermsAlert />;
+
+  return <SolverPageContent key={termId} termId={termId} />;
+}
+
+function SolverPageContent({ termId }: { termId: string }) {
   const [activeStaff, setActiveStaff] = useState<StaffItemProps | null>(null);
   const [warningDialogOpen, setWarningDialogOpen] = useState(false);
   const [pendingAssign, setPendingAssign] = useState<PendingAssign>(null);
@@ -48,7 +52,6 @@ export default function SolverPage() {
     string | undefined
   >();
 
-  if (!termId) return <NoTermsAlert />;
   const [{ courses }] = api.courses.getAllCoursesForTerm.useSuspenseQuery({
     termId,
   });
@@ -308,13 +311,13 @@ export default function SolverPage() {
 
   return (
     <div className="flex h-[calc(100vh-4rem)] flex-col">
-      <AleadyAssignedAlert
+      <AlreadyAssignedAlert
         open={warningDialogOpen}
         fromCourse={pendingAssign?.fromSectionCode ?? ""}
         toCourse={pendingAssign?.toSectionCode ?? ""}
         staffName={activeStaff?.name ?? ""}
         onOpenChange={(open) => setWarningDialogOpen(open)}
-        onDontShowAgain={() => setShowAssignWarning(false)}
+        onDontShowAgainChange={(checked) => setShowAssignWarning(!checked)}
         onCancel={() => {
           setWarningDialogOpen(false);
           setPendingAssign(null);

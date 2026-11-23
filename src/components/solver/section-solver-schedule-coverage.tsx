@@ -7,7 +7,7 @@ import {
 import { calculateCoverage, type Slot } from "@/lib/schedule-coverage";
 import { CalendarIcon } from "lucide-react";
 
-export type SectionSolverScheduleCoverageProp = {
+export type SectionSolverScheduleCoverageProps = {
   needed: Slot[];
   assigned: Slot[];
 };
@@ -15,7 +15,7 @@ export type SectionSolverScheduleCoverageProp = {
 export function SectionSolverScheduleCoverage({
   assigned,
   needed,
-}: SectionSolverScheduleCoverageProp) {
+}: SectionSolverScheduleCoverageProps) {
   const { percent } = calculateCoverage(needed, assigned);
 
   return (
@@ -34,7 +34,7 @@ export function SectionSolverScheduleCoverage({
           ? "Scheduling coverage is less than 50%"
           : percent < 75
             ? "Scheduling coverage is less than 75%"
-            : "Scheduling coverage is more than 75%"}
+            : "Scheduling coverage is at least 75%"}
       </TooltipContent>
     </Tooltip>
   );

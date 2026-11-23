@@ -4,18 +4,19 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 RUN corepack enable
-COPY prisma ./prisma
 
 ##### DEPS
 FROM base AS deps
-COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml .npmrc ./
+# The postinstall script generates the Prisma client, but does not need migrations.
+COPY prisma/schema.prisma ./prisma/schema.prisma
 RUN pnpm install --frozen-lockfile
 
 ##### BUILDER
-FROM base AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+FROM deps AS builder
+COPY next.config.js postcss.config.js tsconfig.json ./
+COPY public ./public
+COPY src ./src
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN SKIP_ENV_VALIDATION=1 pnpm run build
 
@@ -37,7 +38,8 @@ CMD ["node", "server.js"]
 
 ##### MIGRATOR (has prisma cli)
 FROM base AS migrator
-WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+COPY package.json pnpm-workspace.yaml .npmrc ./
+COPY prisma/schema.prisma ./prisma/schema.prisma
+COPY prisma/migrations ./prisma/migrations
 CMD ["pnpm", "prisma", "migrate", "deploy"]
