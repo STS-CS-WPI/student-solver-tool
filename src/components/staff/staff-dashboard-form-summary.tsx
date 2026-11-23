@@ -2,7 +2,8 @@
 import React from "react";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { api } from "@/trpc/react";
-import { BaseScheduleSelector, slotToDate } from "@/lib/schedule-selector";
+import { ScheduleSelector } from "@/components/schedule-selector";
+import { WEEKDAYS } from "@/lib/schedule-selector";
 
 interface StaffDashboardFormSummaryProps {
   userId: string;
@@ -54,8 +55,13 @@ const StaffDashboardFormSumary: React.FC<StaffDashboardFormSummaryProps> = ({
           <div>
             <h3 className="text-lg font-semibold">Times Available</h3>
             <div className="pointer-events-none">
-              <BaseScheduleSelector
-                selection={timesAvailable.map((d) => slotToDate(d))}
+              <ScheduleSelector
+                className="mx-auto max-w-lg [--schedule-hour-height:24px]"
+                weekdays={WEEKDAYS}
+                startHour={8}
+                endHour={22}
+                resolution={60}
+                selection={timesAvailable}
               />
             </div>
           </div>

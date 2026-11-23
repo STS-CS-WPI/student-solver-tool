@@ -7,7 +7,8 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
-import { BaseScheduleSelector, slotToDate } from "@/lib/schedule-selector";
+import { ScheduleSelector } from "@/components/schedule-selector";
+import { WEEKDAYS } from "@/lib/schedule-selector";
 import { api } from "@/trpc/react";
 
 type CoursesCardProps = {
@@ -79,10 +80,13 @@ export const CoursesCard: React.FC<CoursesCardProps> = ({
                   </h4>
                   {course.professorPreference?.timesRequired?.length ? (
                     <div className="pointer-events-none max-w-[800px]">
-                      <BaseScheduleSelector
-                        selection={course.professorPreference.timesRequired.map(
-                          slotToDate,
-                        )}
+                      <ScheduleSelector
+                        className="mx-auto max-w-lg [--schedule-hour-height:24px]"
+                        weekdays={WEEKDAYS}
+                        startHour={8}
+                        endHour={22}
+                        resolution={60}
+                        selection={course.professorPreference.timesRequired}
                       />
                     </div>
                   ) : (

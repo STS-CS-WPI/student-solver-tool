@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { slotToDate } from "@/lib/schedule-selector";
+import type { Slot } from "@/lib/schedule-coverage";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import FormEntryAvailability from "./form-entry-availability";
@@ -89,7 +89,7 @@ const MultiStepFormModal: React.FC<MultiStepFormModalProps> = ({
   const continueEditing = () => {
     if (!savedForm) return;
     setQualifiedSectionIds(savedForm.qualifications.map((q) => q.sectionId));
-    setCurrentTimes(savedForm.timesAvailable.map(slotToDate));
+    setCurrentTimes(savedForm.timesAvailable);
     setCurrentPrefs(
       Object.fromEntries(
         savedForm.preferences.map((p) => [
@@ -105,7 +105,7 @@ const MultiStepFormModal: React.FC<MultiStepFormModalProps> = ({
 
   const [step, setStep] = useState(1);
 
-  const [currentTimes, setCurrentTimes] = useState<Date[]>([]);
+  const [currentTimes, setCurrentTimes] = useState<Slot[]>([]);
   const [currentPrefs, setCurrentPrefs] = useState({});
   const [currentComments, setCurrentComments] = useState("");
 

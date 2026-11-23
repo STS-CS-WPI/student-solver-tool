@@ -2,17 +2,18 @@
 
 import React, { useState } from "react";
 import { api } from "@/trpc/react";
-import { BaseScheduleSelector, dateToSlot } from "@/lib/schedule-selector";
+import { ScheduleSelector } from "@/components/schedule-selector";
+import { WEEKDAYS } from "@/lib/schedule-selector";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-export type WeeklySlot = { day: "M" | "T" | "W" | "R" | "F"; hour: number };
+import { dedupe, type Slot } from "@/lib/schedule-coverage";
 
 interface FormEntryTimesProps {
   userId: string;
   termId: string;
-  prevData: Date[];
-  onChange: (selection: Date[]) => void;
+  prevData: Slot[];
+  onChange: (selection: Slot[]) => void;
   onNext: () => void;
   onBack: () => void;
 }
@@ -25,7 +26,7 @@ const FormEntryTimes: React.FC<FormEntryTimesProps> = ({
   onNext,
   onBack,
 }) => {
-  const [selection, setSelection] = useState<Date[]>(prevData);
+  const [selection, setSelection] = useState<Slot[]>(prevData);
   const utils = api.useUtils();
   const saveFormMutation = api.studentForm.saveStudentForm.useMutation({
     onError: (error) => {
@@ -43,29 +44,16 @@ const FormEntryTimes: React.FC<FormEntryTimesProps> = ({
   });
 
   function handleNextClick() {
-    const weekly = selectionToWeekly(selection);
-
     saveFormMutation.mutate({
       userId,
       termId,
-      weeklyAvailability: weekly,
+      weeklyAvailability: dedupe(selection),
     });
   }
 
   function handleBackClick() {
     onChange(selection);
     onBack();
-  }
-
-  function selectionToWeekly(sel: Date[]): WeeklySlot[] {
-    const set = new Map<string, WeeklySlot>();
-    sel.forEach((d) => {
-      const slot = dateToSlot(d);
-      if (!slot) return;
-      const key = `${slot.day}:${slot.hour}`;
-      if (!set.has(key)) set.set(key, slot);
-    });
-    return Array.from(set.values());
   }
 
   return (
@@ -76,7 +64,15 @@ const FormEntryTimes: React.FC<FormEntryTimesProps> = ({
       </h2>
 
       <div className="border-secondary rounded-lg border p-4 shadow-sm">
-        <BaseScheduleSelector selection={selection} onChange={setSelection} />
+        <ScheduleSelector
+          className="mx-auto max-w-lg [--schedule-hour-height:24px]"
+          weekdays={WEEKDAYS}
+          startHour={8}
+          endHour={22}
+          resolution={60}
+          selection={selection}
+          onChange={setSelection}
+        />
       </div>
 
       <div className="mt-4 flex justify-between">

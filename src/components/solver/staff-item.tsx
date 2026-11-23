@@ -8,7 +8,8 @@ import {
 import { RoleBadges } from "@/components/role-badge";
 import { Button } from "../ui/button";
 import type { RouterOutputs } from "@/trpc/react";
-import { BaseScheduleSelector, slotToDate } from "@/lib/schedule-selector";
+import { ScheduleSelector } from "@/components/schedule-selector";
+import { WEEKDAYS } from "@/lib/schedule-selector";
 import { getPreferenceScore, humanizeKey } from "@/lib/utils";
 import type { PreferenceLevel } from "@prisma/client";
 export type StaffItemProps =
@@ -108,7 +109,14 @@ export function StaffItem({
         <div className="w-1/2 font-medium">
           Times Available:
           <div className="pointer-events-none rounded-md border p-2">
-            <BaseScheduleSelector selection={timesAvailable.map(slotToDate)} />
+            <ScheduleSelector
+              className="mx-auto max-w-lg [--schedule-hour-height:24px]"
+              weekdays={WEEKDAYS}
+              startHour={8}
+              endHour={22}
+              resolution={60}
+              selection={timesAvailable}
+            />
           </div>
         </div>
       </HoverCardContent>

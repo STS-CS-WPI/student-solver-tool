@@ -16,14 +16,9 @@ import {
   TableRow,
 } from "../ui/table";
 import { Badge } from "../ui/badge";
-import {
-  slotToDate,
-  dateToSlot,
-  stylesByStatus,
-  BaseScheduleSelector,
-} from "@/lib/schedule-selector";
-import { calculateCoverage, dedupe, slotToKey } from "@/lib/schedule-coverage";
-import { cn } from "@/lib/utils";
+import { ScheduleSelector } from "@/components/schedule-selector";
+import { stylesByStatus, WEEKDAYS } from "@/lib/schedule-selector";
+import { calculateCoverage, slotToKey } from "@/lib/schedule-coverage";
 
 type SectionInfoCardProps = {
   section: SectionAccordionProps["classes"][0];
@@ -38,7 +33,25 @@ export function SectionInfoCard({ section }: SectionInfoCardProps) {
   const neededKeys = new Set(needed.map(slotToKey));
   const assignedKeys = new Set(assigned.map(slotToKey));
 
-  const selection = dedupe([...needed, ...assigned]).map(slotToDate);
+  const coverageAppearance = {
+    default: {
+      className: stylesByStatus["not-needed"].cls,
+      label: stylesByStatus["not-needed"].title,
+    },
+    bySlot: Object.fromEntries(
+      [...new Set([...neededKeys, ...assignedKeys])].map((key) => {
+        const isNeeded = neededKeys.has(key);
+        const isAssigned = assignedKeys.has(key);
+        const status = isNeeded
+          ? isAssigned
+            ? "needed-assigned"
+            : "needed-unassigned"
+          : "not-needed-assigned";
+        const { cls, title } = stylesByStatus[status];
+        return [key, { className: cls, label: title }];
+      }),
+    ),
+  };
   const { percent, totalCovered, totalNeeded } = calculateCoverage(
     needed,
     assigned,
@@ -79,48 +92,14 @@ export function SectionInfoCard({ section }: SectionInfoCardProps) {
           </CollapsibleTrigger>
           <CollapsibleContent className="pt-1">
             <div className="flex flex-col space-y-1 overflow-x-auto rounded-md border p-2">
-              <BaseScheduleSelector
-                selection={selection}
-                renderDateCell={(time, _selected, setEl) => {
-                  const ref: React.Ref<HTMLDivElement> = (node) => {
-                    if (node) setEl(node);
-                  };
-
-                  const slot = dateToSlot(time);
-                  if (!slot) return <div ref={ref} className="h-4" />;
-
-                  const key = slotToKey(slot);
-                  const isNeeded = neededKeys.has(key);
-                  const isAssigned = assignedKeys.has(key);
-
-                  let status: keyof typeof stylesByStatus = "not-needed";
-
-                  if (isNeeded && isAssigned) {
-                    status = "needed-assigned";
-                  } else if (isNeeded && !isAssigned) {
-                    status = "needed-unassigned";
-                  } else if (!isNeeded && isAssigned) {
-                    status = "not-needed-assigned";
-                  } else {
-                    status = "not-needed";
-                  }
-
-                  const { cls, title } = stylesByStatus[status];
-
-                  return (
-                    <div
-                      ref={ref}
-                      role="gridcell"
-                      title={title}
-                      className={cn(
-                        "h-4 rounded-sm",
-                        "focus-visible:ring-ring/60 focus-visible:ring-2 focus-visible:outline-none",
-                        cls,
-                      )}
-                    />
-                  );
-                }}
-              />{" "}
+              <ScheduleSelector
+                className="mx-auto max-w-lg [--schedule-hour-height:24px]"
+                weekdays={WEEKDAYS}
+                startHour={8}
+                endHour={22}
+                resolution={60}
+                appearance={coverageAppearance}
+              />
               <section>
                 <div className="text-muted-foreground">
                   Coverage: <strong>{percent}%</strong> ({totalCovered}/

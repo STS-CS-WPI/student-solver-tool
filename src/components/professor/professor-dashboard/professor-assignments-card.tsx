@@ -27,7 +27,8 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { BaseScheduleSelector, slotToDate } from "@/lib/schedule-selector";
+import { ScheduleSelector } from "@/components/schedule-selector";
+import { WEEKDAYS } from "@/lib/schedule-selector";
 
 type RouterOutputs = inferRouterOutputs<AppRouter>;
 
@@ -103,8 +104,13 @@ const ProfessorAssignmentsCard: React.FC<ProfessorAssignmentsCardProps> = ({
                         <Button size="sm">Availability</Button>
                       </HoverCardTrigger>
                       <HoverCardContent>
-                        <BaseScheduleSelector
-                          selection={staff.timesAvailable.map(slotToDate)}
+                        <ScheduleSelector
+                          className="mx-auto max-w-lg [--schedule-hour-height:24px]"
+                          weekdays={WEEKDAYS}
+                          startHour={8}
+                          endHour={22}
+                          resolution={60}
+                          selection={staff.timesAvailable}
                         />
                       </HoverCardContent>
                     </HoverCard>

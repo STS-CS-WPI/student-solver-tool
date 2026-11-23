@@ -8,12 +8,9 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import {
-  BaseScheduleSelector,
-  dateToSlot,
-  slotToDate,
-} from "@/lib/schedule-selector";
-import { isSlot, type Slot } from "@/lib/schedule-coverage";
+import { ScheduleSelector } from "@/components/schedule-selector";
+import { WEEKDAYS } from "@/lib/schedule-selector";
+import type { Slot } from "@/lib/schedule-coverage";
 
 type SelectRequiredTimesProps = {
   timesRequired: Slot[];
@@ -42,11 +39,14 @@ export const SelectRequiredTimes: React.FC<SelectRequiredTimesProps> = ({
               in-person help.
             </p>
             <div className="mx-auto w-full max-w-3xl">
-              <BaseScheduleSelector
-                selection={timesRequired.map(slotToDate)}
-                onChange={(dates) =>
-                  onChange(dates.map(dateToSlot).filter(isSlot))
-                }
+              <ScheduleSelector
+                className="mx-auto max-w-lg [--schedule-hour-height:24px]"
+                weekdays={WEEKDAYS}
+                startHour={8}
+                endHour={22}
+                resolution={60}
+                selection={timesRequired}
+                onChange={onChange}
               />
             </div>
             {timesRequired.length > 0 && (
