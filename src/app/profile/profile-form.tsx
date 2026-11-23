@@ -125,7 +125,7 @@ export default function SettingsProfile({
               Update your personal information and profile picture
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-1">
             {/* Avatar Upload */}
             <FileUpload
               value={avatarFiles}
@@ -209,12 +209,6 @@ export default function SettingsProfile({
                 </FileUploadList>
               )}
             </FileUpload>
-            <p role="alert" className="text-destructive text-sm">
-              {error}
-            </p>
-            <p role="status" className="text-muted-foreground text-sm">
-              {status}
-            </p>
 
             {/* <div className="grid gap-4 sm:grid-cols-2"> */}
             <div className="space-y-2">
@@ -240,10 +234,17 @@ export default function SettingsProfile({
                 id="email"
                 type="email"
                 placeholder="Enter your email"
+                disabled
                 defaultValue={defaultValues.email ?? ""}
                 readOnly
               />
             </div>
+            <p role="alert" className="text-destructive text-sm">
+              {error}
+            </p>
+            <p role="status" className="text-muted-foreground text-sm">
+              {status}
+            </p>
           </CardContent>
           <CardFooter className="flex justify-end gap-2">
             <Button
