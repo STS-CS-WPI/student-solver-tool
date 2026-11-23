@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "cn";
+import Image from "next/image";
 import {
   Direction as DirectionPrimitive,
   Slot as SlotPrimitive,
@@ -815,8 +816,7 @@ function FileUploadDropzone(props: FileUploadDropzoneProps) {
       if (!items) return;
 
       const files: File[] = [];
-      for (let i = 0; i < items.length; i++) {
-        const item = items[i];
+      for (const item of items) {
         if (item?.kind === "file") {
           const file = item.getAsFile();
           if (file) {
@@ -857,8 +857,6 @@ function FileUploadDropzone(props: FileUploadDropzoneProps) {
       role="region"
       id={context.dropzoneId}
       aria-controls={`${context.inputId} ${context.listId}`}
-      aria-disabled={context.disabled}
-      aria-invalid={invalid}
       data-disabled={context.disabled ? "" : undefined}
       data-dragging={dragOver ? "" : undefined}
       data-invalid={invalid ? "" : undefined}
@@ -931,7 +929,7 @@ function FileUploadList(props: FileUploadListProps) {
     className,
     orientation = "vertical",
     asChild,
-    forceMount,
+    forceMount = false,
     ...listProps
   } = props;
 
@@ -947,7 +945,6 @@ function FileUploadList(props: FileUploadListProps) {
     <ListPrimitive
       role="list"
       id={context.listId}
-      aria-orientation={orientation}
       data-orientation={orientation}
       data-slot="file-upload-list"
       data-state={shouldRender ? "active" : "inactive"}
@@ -1077,7 +1074,13 @@ function FileUploadItemPreview(props: FileUploadItemPreviewProps) {
         }
 
         return (
-          <img src={url} alt={file.name} className="size-full object-cover" />
+          <Image
+            src={url}
+            alt={file.name}
+            fill
+            unoptimized
+            className="size-full object-cover"
+          />
         );
       }
 
@@ -1190,7 +1193,7 @@ function FileUploadItemProgress(props: FileUploadItemProgressProps) {
     variant = "linear",
     size = 40,
     asChild,
-    forceMount,
+    forceMount = false,
     className,
     ...progressProps
   } = props;
@@ -1356,8 +1359,8 @@ interface FileUploadClearProps extends React.ComponentProps<"button"> {
 function FileUploadClear(props: FileUploadClearProps) {
   const {
     asChild,
-    forceMount,
-    disabled,
+    forceMount = false,
+    disabled = false,
     onClick: onClickProp,
     ...clearProps
   } = props;
