@@ -20,3 +20,18 @@ GHCR packages default to private, even for public repositories. To allow anonymo
 Docker layers use GitHub Actions caching with separate `runner` and `migrator` scopes.
 
 CI prepares its database with `prisma db push`, so it does not execute committed migration SQL.
+
+## Releases
+
+The [release workflow](./workflows/release.yml) runs when a GitHub release is published, including prereleases. It adds version tags to the release commit's existing CI images. For example, `v2.1.0` adds:
+
+```text
+ghcr.io/sts-cs-wpi/student-solver-tool:runner-v2.1.0
+ghcr.io/sts-cs-wpi/student-solver-tool:migrator-v2.1.0
+```
+
+1. Choose a `main` commit whose CI workflow has succeeded, including both Docker jobs.
+2. Publish a GitHub release targeting that commit with a version tag such as `v2.1.0`. Generate release notes in GitHub or with `gh release create --generate-notes`.
+3. Confirm **Release images** succeeds, then follow the [deployment instructions](../deploy/README.md).
+
+If a source image is missing, rerun the release workflow after CI finishes. The workflow rejects existing version tags that point to different images.
