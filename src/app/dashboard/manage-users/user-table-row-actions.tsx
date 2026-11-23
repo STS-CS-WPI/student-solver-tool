@@ -7,7 +7,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Edit,
   LockIcon,
-  MoreHorizontal,
   RefreshCw,
   Save,
   Settings2Icon,
@@ -15,12 +14,9 @@ import {
   Unlock,
 } from "lucide-react";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { isAssistant, isProfessor } from "@/lib/utils";
 import {
@@ -30,7 +26,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import type z from "zod";
@@ -39,14 +34,21 @@ import { Role } from "@prisma/client";
 import Link from "next/link";
 import { updateUserInputSchema } from "@/types/form-inputs";
 import { Confirm } from "@/components/confirm-action-wrapper";
+import {
+  RowActionsMenu,
+  useRowActionsMenu,
+} from "@/components/data-table/row-actions-menu";
 
 export function UserTableRowAction({
   termId,
   user,
+  label,
 }: {
   termId: string;
   user: UserTableRow;
+  label: string;
 }) {
+  const rowMenu = useRowActionsMenu<"edit" | "delete">();
   const utils = api.useUtils();
   const deleteUserMutation = api.staff.deleteUser.useMutation({
     onSuccess: async () => {
@@ -102,123 +104,107 @@ export function UserTableRowAction({
   }
 
   return (
-    <div className="flex justify-end">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-8 w-8 p-0">
-            <span className="sr-only">Open menu</span>
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          {isProfessor(user) && (
-            <DropdownMenuItem asChild>
-              <Link
-                href={{
-                  pathname: "/professor",
-                  query: { userId: user.id, termId },
-                }}
-                target="_blank"
-              >
-                <Settings2Icon className="size-4" /> Edit staff preferences
-              </Link>
-            </DropdownMenuItem>
-          )}
-          {isAssistant(user) && (
-            <DropdownMenuItem asChild>
-              <Link
-                href={{
-                  pathname: "/preferences-form",
-                  query: { userId: user.id, termId },
-                }}
-                target="_blank"
-              >
-                <Settings2Icon className="size-4" /> Edit staff preferences
-              </Link>
-            </DropdownMenuItem>
-          )}
-          <DropdownMenuItem onClick={() => onToggleUserLock(user.id)}>
-            {user.locked ? (
-              <>
-                <Unlock className="h-4 w-4" /> Unlock preferences
-              </>
-            ) : (
-              <>
-                <LockIcon className="h-4 w-4" /> Lock preferences
-              </>
-            )}
-          </DropdownMenuItem>
-          <Dialog>
-            <DialogTrigger asChild>
-              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                <Edit className="h-4 w-4" /> Edit user
-              </DropdownMenuItem>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Edit User</DialogTitle>
-                <DialogDescription>
-                  Update user information. All fields are required.
-                </DialogDescription>
-              </DialogHeader>
-              <form
-                onSubmit={editForm.handleSubmit(onEdit)}
-                className="space-y-4"
-              >
-                <FormInput
-                  control={editForm.control}
-                  name="name"
-                  label="Name"
-                />
-                <FormInput
-                  control={editForm.control}
-                  name="email"
-                  label="Email"
-                />
-                <FormCombobox
-                  control={editForm.control}
-                  name="role"
-                  label="Role"
-                  options={Object.values(Role).map((value) => ({
-                    value,
-                    label: value,
-                  }))}
-                />
-                <FormInput
-                  control={editForm.control}
-                  name="hours"
-                  label="Hours"
-                />
-                <DialogFooter>
-                  <Button type="submit" disabled={updateUserMutation.isPending}>
-                    {updateUserMutation.isPending ? (
-                      <>
-                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="mr-2 h-4 w-4" />
-                        Save Changes
-                      </>
-                    )}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
-          <DropdownMenuSeparator />
-          <Confirm action={handleDelete}>
-            <DropdownMenuItem
-              variant="destructive"
-              onSelect={(e) => e.preventDefault()}
+    <>
+      <RowActionsMenu label={`Actions for ${label}`} {...rowMenu.menuProps}>
+        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+        {isProfessor(user) && (
+          <DropdownMenuItem asChild>
+            <Link
+              href={{
+                pathname: "/professor",
+                query: { userId: user.id, termId },
+              }}
+              target="_blank"
             >
-              <Trash2 className="h-4 w-4" /> Delete
-            </DropdownMenuItem>
-          </Confirm>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
+              <Settings2Icon className="size-4" /> Edit staff preferences
+            </Link>
+          </DropdownMenuItem>
+        )}
+        {isAssistant(user) && (
+          <DropdownMenuItem asChild>
+            <Link
+              href={{
+                pathname: "/preferences-form",
+                query: { userId: user.id, termId },
+              }}
+              target="_blank"
+            >
+              <Settings2Icon className="size-4" /> Edit staff preferences
+            </Link>
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuItem
+          onSelect={() => onToggleUserLock(user.id)}
+          disabled={toggleUserLockMutation.isPending}
+        >
+          {user.locked ? (
+            <>
+              <Unlock className="h-4 w-4" /> Unlock preferences
+            </>
+          ) : (
+            <>
+              <LockIcon className="h-4 w-4" /> Lock preferences
+            </>
+          )}
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => rowMenu.openDialog("edit")}>
+          <Edit className="h-4 w-4" /> Edit user
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          variant="destructive"
+          onSelect={() => rowMenu.openDialog("delete")}
+          disabled={deleteUserMutation.isPending}
+        >
+          <Trash2 className="h-4 w-4" /> Delete
+        </DropdownMenuItem>
+      </RowActionsMenu>
+      <Dialog {...rowMenu.getDialogProps("edit")}>
+        <DialogContent {...rowMenu.dialogContentProps}>
+          <DialogHeader>
+            <DialogTitle>Edit User</DialogTitle>
+            <DialogDescription>
+              Update user information. All fields are required.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={editForm.handleSubmit(onEdit)} className="space-y-4">
+            <FormInput control={editForm.control} name="name" label="Name" />
+            <FormInput control={editForm.control} name="email" label="Email" />
+            <FormCombobox
+              control={editForm.control}
+              name="role"
+              label="Role"
+              options={Object.values(Role).map((value) => ({
+                value,
+                label: value,
+              }))}
+            />
+            <FormInput control={editForm.control} name="hours" label="Hours" />
+            <DialogFooter>
+              <Button type="submit" disabled={updateUserMutation.isPending}>
+                {updateUserMutation.isPending ? (
+                  <>
+                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Save Changes
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+      <Confirm
+        {...rowMenu.getDialogProps("delete")}
+        {...rowMenu.dialogContentProps}
+        action={handleDelete}
+        confirmLabel="Delete"
+        confirmVariant="destructive"
+      />
+    </>
   );
 }

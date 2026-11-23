@@ -51,12 +51,18 @@ import { toast } from "sonner";
 import { SectionItemSchema, type SectionItem } from "@/lib/courselisting-api";
 import { SingleSectionForm } from "@/components/dashboard/single-section-form";
 import { CSVDropzone } from "@/components/csv-dropzone";
-import type { ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
 
 type SyncSectionsFormProps = {
   year: number;
   termLetter: TermLetter;
+};
+
+type SyncSectionsDialogProps = SyncSectionsFormProps & {
   children?: ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  onCloseAutoFocus?: ComponentProps<typeof DialogContent>["onCloseAutoFocus"];
 };
 
 function useAddSectionsMutation() {
@@ -88,18 +94,22 @@ function useAddSectionsMutation() {
 export function SyncSectionsForm({
   year,
   termLetter,
-  children,
-}: SyncSectionsFormProps) {
+  children = (
+    <Button>
+      <PlusIcon /> Add courses
+    </Button>
+  ),
+  open,
+  onOpenChange,
+  onCloseAutoFocus,
+}: SyncSectionsDialogProps) {
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        {children ?? (
-          <Button>
-            <PlusIcon /> Add section(s)
-          </Button>
-        )}
-      </DialogTrigger>
-      <DialogContent className="w-[95vw] sm:max-w-6xl">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      {children && <DialogTrigger asChild>{children}</DialogTrigger>}
+      <DialogContent
+        className="w-[95vw] sm:max-w-6xl"
+        onCloseAutoFocus={onCloseAutoFocus}
+      >
         <DialogHeader>
           <DialogTitle>
             Sync sections for term {year} {termLetter}
