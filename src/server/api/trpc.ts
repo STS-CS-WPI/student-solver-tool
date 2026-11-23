@@ -22,7 +22,10 @@ import type { Role } from "@prisma/client";
  *
  * @see https://trpc.io/docs/server/context
  */
-export const createTRPCContext = async (opts: { headers: Headers }) => {
+export const createTRPCContext = async (opts: {
+  headers: Headers;
+  request?: Request;
+}) => {
   const session = await auth();
 
   return {
@@ -41,11 +44,12 @@ export type CtxType = Awaited<ReturnType<typeof createTRPCContext>>;
  */
 const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,
-  errorFormatter({ shape, error }) {
+  errorFormatter({ shape, error, path }) {
     return {
       ...shape,
       data: {
         ...shape.data,
+        ...(path?.startsWith("profile.") ? { stack: undefined } : {}),
         zodError:
           error.cause instanceof ZodError ? error.cause.flatten() : null,
       },

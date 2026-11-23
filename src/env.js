@@ -24,6 +24,7 @@ export const env = createEnv({
         ? z.string()
         : z.string().optional(),
     DATABASE_URL: z.string().url(),
+    PROFILE_PICTURE_DIR: z.string().min(1).default("./.local/profile-pictures"),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -58,6 +59,7 @@ export const env = createEnv({
     AUTH_MICROSOFT_ENTRA_ID_ID: process.env.AUTH_MICROSOFT_ENTRA_ID_ID,
     AUTH_MICROSOFT_ENTRA_ID_SECRET: process.env.AUTH_MICROSOFT_ENTRA_ID_SECRET,
     DATABASE_URL: process.env.DATABASE_URL,
+    PROFILE_PICTURE_DIR: process.env.PROFILE_PICTURE_DIR,
     NODE_ENV: process.env.NODE_ENV,
     COORDINATOR_EMAILS: process.env.COORDINATOR_EMAILS,
   },

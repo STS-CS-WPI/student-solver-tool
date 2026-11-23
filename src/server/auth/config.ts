@@ -1,5 +1,5 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import { type DefaultSession, type NextAuthConfig } from "next-auth";
+import type { DefaultSession, NextAuthConfig } from "next-auth";
 import { db } from "@/server/db";
 import { env } from "@/env";
 import type { Role } from "@prisma/client";
@@ -68,6 +68,7 @@ export const authConfig = {
       const currentUser = await db.user.findUnique({
         where: { id },
         select: {
+          name: true,
           roles: { select: { role: true } },
         },
       });
@@ -75,6 +76,7 @@ export const authConfig = {
       if (!currentUser) return null;
 
       token.id = id;
+      token.name = currentUser.name;
       token.roles = currentUser.roles.map(({ role }) => role);
       return token;
     },
@@ -83,6 +85,7 @@ export const authConfig = {
       if (session.user) {
         if (token.id) session.user.id = token.id;
         session.user.roles = token.roles ?? [];
+        session.user.name = token.name ?? null;
       }
       return session;
     },

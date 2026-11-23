@@ -17,6 +17,18 @@ export const nameSchema = z
   .min(1, "Name is required")
   .transform(normalizeName);
 
+export const profileNameSchema = nameSchema.pipe(
+  z
+    .string()
+    .min(1, "Name is required")
+    .max(200, "Name must be at most 200 characters"),
+);
+
+export type SavedProfile = {
+  name: string | null;
+  profilePictureFilename: string | null;
+};
+
 export const createUserInputSchema = z.object({
   name: nameSchema,
   email: z.string().email(),

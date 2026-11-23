@@ -15,6 +15,7 @@ Dockerfile
 node_modules
 npm-debug.log
 prisma/*.db
+.local/
 prisma/README.md
 prisma/seed.ts
 README.md
