@@ -10,6 +10,7 @@ import { termRoute } from "./routers/term";
 import { dashboardRoute } from "./routers/dashboard";
 import { userRoute } from "./routers/users";
 import { validatorRoute } from "./routers/validator";
+import { profileRoute } from "./routers/profile";
 
 /**
  * This is the primary router for your server.
@@ -17,6 +18,7 @@ import { validatorRoute } from "./routers/validator";
  * All routers added in /api/routers should be manually added here.
  */
 export const appRouter = createTRPCRouter({
+  profile: profileRoute,
   professorForm: professorFormRoute,
   professorDashboard: professorDashboardRoute,
   assignment: assignmentRoute,

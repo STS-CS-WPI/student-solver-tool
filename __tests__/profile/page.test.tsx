@@ -34,16 +34,20 @@ it("redirects unauthenticated visitors before querying the database", async () =
   expect(findUnique).not.toHaveBeenCalled();
 });
 
-it("loads only the signed-in user's full name and email", async () => {
+it("loads only the signed-in user's full name, email, and photo filename", async () => {
   auth.mockResolvedValue({ user: { id: "current-user", name: "Stale name" } });
-  const profile = { name: "Current Name", email: "current@example.com" };
+  const profile = {
+    name: "Current Name",
+    email: "current@example.com",
+    profilePictureFilename: null,
+  };
   findUnique.mockResolvedValue(profile);
 
   const page = await ProfilePage();
 
   expect(findUnique).toHaveBeenCalledExactlyOnceWith({
     where: { id: "current-user" },
-    select: { name: true, email: true },
+    select: { name: true, email: true, profilePictureFilename: true },
   });
   expect(page).toMatchObject({ props: { defaultValues: profile } });
 });

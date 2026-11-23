@@ -8,3 +8,4 @@ paper
 .next
 .git
 prisma/*.db
+.local/

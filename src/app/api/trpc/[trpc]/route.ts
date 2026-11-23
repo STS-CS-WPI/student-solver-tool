@@ -1,5 +1,5 @@
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
-import { type NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 
 import { env } from "@/env";
 import { appRouter } from "@/server/api/root";
@@ -12,6 +12,7 @@ import { createTRPCContext } from "@/server/api/trpc";
 const createContext = async (req: NextRequest) => {
   return createTRPCContext({
     headers: req.headers,
+    request: req,
   });
 };
 
@@ -21,6 +22,14 @@ const handler = (req: NextRequest) =>
     req,
     router: appRouter,
     createContext: () => createContext(req),
+    responseMeta: ({ paths }) => ({
+      headers: paths?.some((path) => path.startsWith("profile."))
+        ? {
+            "Cache-Control": "private, no-store",
+            "X-Content-Type-Options": "nosniff",
+          }
+        : undefined,
+    }),
     onError:
       env.NODE_ENV === "development"
         ? ({ path, error }) => {

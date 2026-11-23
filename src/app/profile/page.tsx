@@ -9,7 +9,7 @@ export default async function ProfilePage() {
 
   const profile = await db.user.findUnique({
     where: { id: session.user.id },
-    select: { name: true, email: true },
+    select: { name: true, email: true, profilePictureFilename: true },
   });
 
   if (!profile) notFound();

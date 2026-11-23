@@ -403,7 +403,6 @@ function SectionTable({
                 />
               </TableCell>
 
-              {/* TODO: Add edit button to perhaps select a different prof for that course */}
               <TableCell className="flex flex-row items-end justify-end space-x-2">
                 <button
                   className="inline-block cursor-pointer"

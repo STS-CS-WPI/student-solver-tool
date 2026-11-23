@@ -28,6 +28,7 @@ services:
     environment:
       # production needs this path for db. it will override whatever is in the .env file.
       DATABASE_URL: "file:/data/prod.db"
+      PROFILE_PICTURE_DIR: "/data/profile-pictures"
     volumes:
       - sts_sqlite:/data
     healthcheck:
@@ -53,6 +54,8 @@ services:
       - sts_sqlite:/data
     restart: "no"
     profiles: ["migrate"]
+    environment:
+      DATABASE_URL: "file:/data/prod.db"
 
 volumes:
   caddy_data:

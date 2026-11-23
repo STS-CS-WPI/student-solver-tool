@@ -12,7 +12,7 @@ Usage: $(basename "$0") [options]
 
 Options:
   -b, --branch <name>   Git branch to deploy (default: main)
-      --no-backup       Skip SQLite backup
+      --no-backup       Skip database and picture backup
   -h, --help            Show this help message
 
 Examples:
@@ -66,20 +66,28 @@ git reset --hard "origin/$BRANCH"
 echo "==> Build images"
 docker compose build --pull
 
+# Keep database rows and picture files consistent while taking the backup and migrating.
+resume_sts=false
+if [[ -n "$(docker compose ps --status running -q sts)" ]]; then
+  resume_sts=true
+  docker compose stop sts
+fi
+resume_on_failure() {
+  if [[ "$resume_sts" == true ]]; then docker compose start sts; fi
+}
+trap resume_on_failure EXIT
+
 if [[ "$DO_BACKUP" == true ]]; then
-  echo "==> SQLite backup"
+  echo "==> SQLite and profile picture backup"
   ts="$(date +%Y%m%d-%H%M%S)"
-
   mkdir -p "$BACKUP_DIR"
-
   docker run --rm \
-    -v sts_sqlite:/data \
+    -v sts_sqlite:/data:ro \
     -v "$BACKUP_DIR:/backups" \
-    alpine:3 sh -lc "cp -f /data/prod.db /backups/prod.db.$ts 2>/dev/null || true"
-
-  echo "Backup saved to $BACKUP_DIR/prod.db.$ts"
+    alpine:3 sh -ec "umask 077; tar -czf /backups/sts-data.$ts.tar.gz -C /data ."
+  echo "Backup saved to $BACKUP_DIR/sts-data.$ts.tar.gz"
 else
-  echo "==> Skipping SQLite backup"
+  echo "==> Skipping database and picture backup"
 fi
 
 echo "==> Run DB migrations"
@@ -87,6 +95,7 @@ docker compose --profile migrate run --rm sts-migrate
 
 echo "==> Start / update services"
 docker compose up -d --remove-orphans
+trap - EXIT
 
 echo "==> Current status:"
 docker compose ps
