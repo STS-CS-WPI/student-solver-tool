@@ -32,6 +32,7 @@ import {
   createContext,
   Suspense,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -94,8 +95,14 @@ export function TermProvider({ children }: { children: ReactNode }) {
   // Picks the selected term, if not then active, or first term, or null
   const selectedTerm = useMemo(
     () => all.find((t) => t.id === selectedId) ?? active ?? all[0] ?? null,
-    [all, selectedId],
+    [all, active, selectedId],
   );
+
+  // Updates the id if there was stale ID
+  useEffect(() => {
+    const id = selectedTerm?.id ?? null;
+    if (selectedId !== id) setSelectedId(id);
+  }, [selectedTerm, selectedId, setSelectedId]);
 
   const value = useMemo(
     () => ({
