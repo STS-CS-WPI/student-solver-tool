@@ -1,4 +1,5 @@
 /* Staff related endpoints */
+import { removePicture } from "@/server/profile-pictures";
 import { z } from "zod";
 import {
   coordinatorProcedure,
@@ -401,9 +402,10 @@ export const staffRoute = createTRPCRouter({
       }
 
       // Delete user (cascade should handle related records)
-      await ctx.db.user.delete({
+      const deleted = await ctx.db.user.delete({
         where: { id: userId },
       });
+      await removePicture(deleted.profilePictureFilename);
 
       return {
         success: true,

@@ -1,10 +1,12 @@
+import Link from "next/link";
+import { db } from "@/server/db";
+import { ProfileAvatar } from "@/components/profile-avatar";
 import { auth, signOut } from "@/server/auth";
 import { SidebarMenuButton, SidebarMenuItem } from "../ui/sidebar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
@@ -12,8 +14,12 @@ import { EllipsisVerticalIcon, LogOutIcon, UserIcon } from "lucide-react";
 
 export async function NavUser() {
   const session = await auth();
-  if (!session) return null;
+  if (!session?.user?.id) return null;
   const { user } = session;
+  const profile = await db.user.findUnique({
+    where: { id: user.id },
+    select: { name: true, profilePictureFilename: true },
+  });
 
   async function logoutAction() {
     "use server";
@@ -25,10 +31,12 @@ export async function NavUser() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <SidebarMenuButton className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground h-12 text-sm">
-            {/* TODO: get profile pic from Microsoft */}
-            <UserIcon />
+            <ProfileAvatar
+              filename={profile?.profilePictureFilename ?? null}
+              fallback={<UserIcon className="size-4" />}
+            />
             <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-medium">{user?.name}</span>
+              <span className="truncate font-medium">{profile?.name}</span>
               <span className="text-muted-foreground truncate text-xs">
                 {user?.email}
               </span>
@@ -42,17 +50,23 @@ export async function NavUser() {
           align="end"
           sideOffset={4}
         >
-          <DropdownMenuLabel className="p-0 font-normal">
-            <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-              <UserIcon />
+          <DropdownMenuItem asChild className="p-0 font-normal">
+            <Link
+              href="/profile"
+              className="flex cursor-pointer items-center gap-2 px-1 py-1.5 text-left text-sm"
+            >
+              <ProfileAvatar
+                filename={profile?.profilePictureFilename ?? null}
+                fallback={<UserIcon className="size-4" />}
+              />
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user?.name}</span>
+                <span className="truncate font-medium">{profile?.name}</span>
                 <span className="text-muted-foreground truncate text-xs">
                   {user?.email}
                 </span>
               </div>
-            </div>
-          </DropdownMenuLabel>
+            </Link>
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <form action={logoutAction}>
             <DropdownMenuItem asChild>

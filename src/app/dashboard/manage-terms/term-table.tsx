@@ -4,7 +4,6 @@ import { DataTable } from "@/components/data-table";
 import { Card, CardContent } from "@/components/ui/card";
 import { createColumns, type TermRow } from "./columns";
 
-// TODO: make this paginated
 export function TermTable() {
   const [termStats] = api.term.getTermStats.useSuspenseQuery();
 
