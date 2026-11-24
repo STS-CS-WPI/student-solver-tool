@@ -91,8 +91,9 @@ export function TermProvider({ children }: { children: ReactNode }) {
     active?.id ?? all[0]?.id ?? null,
   );
 
+  // Picks the selected term, if not then active, or first term, or null
   const selectedTerm = useMemo(
-    () => all.find((t) => t.id === selectedId) ?? null,
+    () => all.find((t) => t.id === selectedId) ?? active ?? all[0] ?? null,
     [all, selectedId],
   );
 
